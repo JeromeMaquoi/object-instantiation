@@ -15,6 +15,8 @@ public class InstantiationDepthVisitor extends CtScanner {
     private int maxDepth = 0;
     private final Map<CtMethod<?>, Integer> methodDepthMap = new HashMap<>();
 
+    private final Map<CtConstructor<?>, Integer> constructorDepthMap = new HashMap<>();
+
     @Override
     public <T> void visitCtMethod(CtMethod<T> method) {
         currentDepth = 0;
@@ -25,10 +27,10 @@ public class InstantiationDepthVisitor extends CtScanner {
 
     @Override
     public <T> void visitCtConstructor(CtConstructor<T> constructor) {
-        currentDepth ++;
-        maxDepth = Math.max(maxDepth, currentDepth);
+        currentDepth = 0;
+        maxDepth = 0;
         super.visitCtConstructor(constructor);
-        currentDepth--;
+        constructorDepthMap.put(constructor, maxDepth);
     }
 
     @Override
@@ -62,5 +64,9 @@ public class InstantiationDepthVisitor extends CtScanner {
 
     public Map<CtMethod<?>, Integer> getMethodDepthMap() {
         return methodDepthMap;
+    }
+
+    public Map<CtConstructor<?>, Integer> getConstructorDepthMap() {
+        return constructorDepthMap;
     }
 }

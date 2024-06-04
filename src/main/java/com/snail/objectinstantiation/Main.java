@@ -38,11 +38,10 @@ public class Main {
             }
         }
 
-        Map<CtMethod<?>, Integer> methodDepthMap = visitor.getMethodDepthMap();
+        Map<CtConstructor<?>, Integer> constructorDepthMap = visitor.getConstructorDepthMap();
 
-        for (Map.Entry<CtMethod<?>, Integer> entry : methodDepthMap.entrySet()) {
-            String parent = entry.getKey().getParent().getShortRepresentation();
-            log.info("Parent: {}, Method: {}, Depth: {}", parent, entry.getKey().getSimpleName(), entry.getValue());
+        for (Map.Entry<CtConstructor<?>, Integer> entry : constructorDepthMap.entrySet()) {
+            log.info("Constructor: {}, Depth: {}", entry.getKey().get, entry.getValue());
         }
     }
 }
