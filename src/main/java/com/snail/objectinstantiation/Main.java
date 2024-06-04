@@ -7,6 +7,14 @@ public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        log.info("Hello world!");
+        if (args == null || args.length < 1) {
+            log.error("No argument provided. Exiting the application");
+            System.exit(1);
+        }
+
+        String path = args[0];
+
+
+
     }
 }
