@@ -1,4 +1,4 @@
-package com.snail.objectinstantiation;
+package be.unamur.snail.objectinstantiation;
 
 import org.junit.jupiter.api.Test;
 

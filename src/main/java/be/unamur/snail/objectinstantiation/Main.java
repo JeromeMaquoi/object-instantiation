@@ -1,14 +1,11 @@
-package com.snail.objectinstantiation;
+package be.unamur.snail.objectinstantiation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
-import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.Map;
@@ -29,7 +26,7 @@ public class Main {
         launcher.buildModel();
 
         CtModel model = launcher.getModel();
-        InstantiationDepthVisitor visitor = new InstantiationDepthVisitor();
+        ObjectCreationCounterVisitor visitor = new ObjectCreationCounterVisitor();
 
         for (CtClass<?> clazz : model.getElements(new TypeFilter<>(CtClass.class))) {
             //log.info(clazz.toString());
@@ -41,7 +38,9 @@ public class Main {
         Map<CtConstructor<?>, Integer> constructorDepthMap = visitor.getConstructorDepthMap();
 
         for (Map.Entry<CtConstructor<?>, Integer> entry : constructorDepthMap.entrySet()) {
-            log.info("Constructor: {}, Depth: {}", entry.getKey().get, entry.getValue());
+            if (entry.getValue() > 1) {
+                log.info("Constructor: {}, Depth: {}", entry.getKey().getSignature(), entry.getValue());
+            }
         }
     }
 }

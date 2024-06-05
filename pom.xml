@@ -13,7 +13,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <start-class>com.snail.objectinstantiation.Main</start-class>
+        <start-class>be.unamur.snail.objectinstantiation.Main</start-class>
         <spring-boot.version>3.1.1</spring-boot.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     </properties>
