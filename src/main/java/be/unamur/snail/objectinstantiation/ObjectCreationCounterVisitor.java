@@ -2,10 +2,8 @@ package be.unamur.snail.objectinstantiation;
 
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtNewClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtExecutable;
-import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.visitor.CtScanner;
 
 import java.util.HashMap;
