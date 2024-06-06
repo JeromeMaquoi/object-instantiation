@@ -1,8 +1,10 @@
-package be.unamur.snail.objectinstantiation;
+package be.unamur.snail;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
+import spoon.support.JavaOutputProcessor;
+import spoon.support.sniper.SniperJavaPrettyPrinter;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
@@ -19,11 +21,16 @@ public class Main {
         launcher.addInputResource(inputPath);
         launcher.setSourceOutputDirectory(outputPath);
 
-        launcher.getEnvironment().setNoClasspath(true);
-
+        // Apply transformation to the constructors with new instances initialization
         launcher.addProcessor(new FieldInitializationProcessor());
+
+        // Preserve the original formatting and imports
+        //launcher.getEnvironment().setPrettyPrinterCreator(() -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
+
         launcher.buildModel();
         launcher.process();
+        launcher.getEnvironment().setShouldCompile(true);
+        launcher.getEnvironment().setAutoImports(true);
         launcher.prettyprint();
         log.info("Finished output to directory !");
     }

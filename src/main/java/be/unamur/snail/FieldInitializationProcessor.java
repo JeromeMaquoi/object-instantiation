@@ -1,11 +1,10 @@
-package be.unamur.snail.objectinstantiation;
+package be.unamur.snail;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
@@ -29,7 +28,7 @@ public class FieldInitializationProcessor extends AbstractProcessor<CtConstructo
                 // Create the assignment for the field
                 CtAssignment<?,?> newAssignment = assignment.clone();
 
-                CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.RegisterUtils");
+                CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
                 CtExecutableReference<?> registerMethod = factory.Executable().createReference(
                         registerUtilsType,
                         factory.Type().voidPrimitiveType(),
