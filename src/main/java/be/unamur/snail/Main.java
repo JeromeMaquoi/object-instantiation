@@ -3,6 +3,7 @@ package be.unamur.snail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
+import spoon.reflect.visitor.DefaultJavaPrettyPrinter;
 import spoon.support.JavaOutputProcessor;
 import spoon.support.sniper.SniperJavaPrettyPrinter;
 
@@ -20,17 +21,22 @@ public class Main {
         Launcher launcher = new Launcher();
         launcher.addInputResource(inputPath);
         launcher.setSourceOutputDirectory(outputPath);
+        launcher.getEnvironment().setShouldCompile(true);
+        launcher.getEnvironment().setAutoImports(true);
+        launcher.getEnvironment().useTabulations(true);
+        launcher.getEnvironment().setComplianceLevel(17);
 
         // Apply transformation to the constructors with new instances initialization
         launcher.addProcessor(new FieldInitializationProcessor());
+        //launcher.addProcessor(new ClassTest());
 
         // Preserve the original formatting and imports
-        //launcher.getEnvironment().setPrettyPrinterCreator(() -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
+        launcher.getEnvironment().setPrettyPrinterCreator(() -> {
+            return new SniperJavaPrettyPrinter(launcher.getEnvironment());
+        });
 
         launcher.buildModel();
         launcher.process();
-        launcher.getEnvironment().setShouldCompile(true);
-        launcher.getEnvironment().setAutoImports(true);
         launcher.prettyprint();
         log.info("Finished output to directory !");
     }

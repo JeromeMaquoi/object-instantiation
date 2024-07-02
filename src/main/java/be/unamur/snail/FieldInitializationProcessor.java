@@ -25,6 +25,7 @@ public class FieldInitializationProcessor extends AbstractProcessor<CtConstructo
         for (CtAssignment<?,?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             CtExpression<?> assignedExpression = assignment.getAssignment();
             if (assignedExpression instanceof CtConstructorCall<?>) {
+                //log.info("assignedExpression: {}", assignedExpression);
                 // Create the assignment for the field
                 CtAssignment<?,?> newAssignment = assignment.clone();
 
@@ -42,9 +43,17 @@ public class FieldInitializationProcessor extends AbstractProcessor<CtConstructo
                         thisReference,
                         newAssignment
                 );
+                //log.info(declaringTypeReference.getQualifiedName());
+                //log.info("Original assignment : {}", assignment);
+                //log.info("New assignment : {}\n\n", registerInvocation);
 
                 // Replace the original assignment with the register invocation
-                assignment.replace(registerInvocation);
+                try {
+                    assignment.replace(registerInvocation);
+                } catch (Exception e) {
+                    log.error("Error replacing assignment : {}", e.getMessage());
+                    e.printStackTrace();
+                }
             }
         }
     }
