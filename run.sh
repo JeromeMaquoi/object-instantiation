@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#project_name="/spring-boot"
-#src_folder_path="/spring-boot-project/spring-boot/"
+project_name="spring-boot"
+src_folder_path="/spring-boot-project/spring-boot/"
 
-project_name="/spoon"
-src_folder_path=""
+#project_name="spoon"
+#src_folder_path=""
 
-#project_name="/jabref"
+#project_name="jabref"
 #src_folder_path=""
 
 repo_path="/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/"
@@ -38,8 +38,8 @@ cp -r "$register_path" "${output_source_code}/be/unamur/snail/register/"
 cd "$output_repo_path" || return
 pwd
 
-#export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
-#./gradlew clean spring-boot-project:spring-boot:test
+export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
+./gradlew clean spring-boot-project:spring-boot:test
 
 #export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 #mvn clean test
