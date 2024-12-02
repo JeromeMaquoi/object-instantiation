@@ -4,8 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
+import spoon.reflect.code.CtAssignment;
+import spoon.reflect.code.CtExpression;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtField;
+import spoon.reflect.reference.CtFieldReference;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
@@ -24,7 +31,7 @@ public class Main {
 
         CtModel model = launcher.getModel();
         model.getAllTypes().stream()
-                .filter(ctType -> ctType instanceof CtClass)
+                .filter(ctType -> ctType instanceof CtClass<?>)
                 .map(ctType -> (CtClass<?>) ctType)
                 .forEach(Main::analyzeClass);
     }
@@ -34,13 +41,31 @@ public class Main {
 
         for (CtConstructor<?> constructor : ctClass.getConstructors()) {
             log.info("Constructor: {}", constructor.getSignature());
-//            int initializedFields = countInitializedFields(constructor, ctClass);
-//            log.info("Initialized fields: {}", initializedFields);
+            int initializedFields = countInitializedFields(constructor, ctClass);
+            log.info("Initialized fields: {}\n\n", initializedFields);
         }
     }
 
-    private static int countInitializedFields(CtConstructor<?> ctConstructor, CtClass<?> ctClass) {
-        return 0;
+    private static int countInitializedFields(CtConstructor<?> constructor, CtClass<?> ctClass) {
+        Set<CtFieldReference<?>> initializedFields = new HashSet<>();
+
+        constructor.getBody().getStatements().stream()
+                .filter(statement -> statement instanceof CtAssignment<?,?>)
+                .map(statement -> (CtAssignment) statement)
+                .forEach(assignment -> {
+                    CtExpression<?> lhs = assignment.getAssigned();
+                    if (lhs instanceof CtFieldReference && isFieldOfClass((CtFieldReference<?>) lhs, ctClass)) {
+                        initializedFields.add((CtFieldReference<?>) lhs);
+                    }
+                });
+        return initializedFields.size();
+    }
+
+    private static boolean isFieldOfClass(CtFieldReference<?> fieldRef, CtClass<?> ctClass) {
+        // Check if the field reference belongs to the given class
+        return ctClass.getFields().stream()
+                .map(CtField::getReference)
+                .anyMatch(field -> field.equals(fieldRef));
     }
 
 }
