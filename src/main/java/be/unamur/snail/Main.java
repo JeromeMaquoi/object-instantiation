@@ -35,16 +35,16 @@ public class Main {
         //launcher.getEnvironment().setAutoImports(true);
         //launcher.getEnvironment().useTabulations(true);
 
-        launcher.getEnvironment().setComplianceLevel(19);
-        launcher.getEnvironment().setPrettyPrinterCreator(() -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
+//        launcher.getEnvironment().setComplianceLevel(19);
+//        launcher.getEnvironment().setPrettyPrinterCreator(() -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
+//        launcher.getEnvironment().setPrettyPrinterCreator(() -> new DefaultJavaPrettyPrinter(launcher.getEnvironment()));
 
-        //handleDifferentProject(launcher, inputPath);
+        handleDifferentProject(launcher, inputPath);
 
         // Apply transformation to the constructors with new instances initialization
         //launcher.addProcessor(new TryWithResourceProcessor());
         //launcher.addProcessor(new FieldInitializationProcessor());
 
-        launcher.run();
         log.info("Finished output to directory !");
     }
 
@@ -67,8 +67,10 @@ public class Main {
                         if (name.equals("JksSslStoreDetails.java")) {
                             log.info("Processing file : {}", name);
                             launcher.getEnvironment().setPrettyPrinterCreator(() -> new DefaultJavaPrettyPrinter(launcher.getEnvironment()));
+                            launcher.run();
                         } else {
                             launcher.getEnvironment().setPrettyPrinterCreator(() -> new SniperJavaPrettyPrinter(launcher.getEnvironment()));
+                            launcher.run();
                         }
                     }
                 } else {
