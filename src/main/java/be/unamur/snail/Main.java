@@ -17,7 +17,23 @@ import java.util.Set;
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
+        if (args == null || args.length < 2) {
+            log.error("Not enough arguments provided. Exiting the application");
+            System.exit(1);
+        }
+        String inputPath = args[0];
+        String outputPath = args[1];
+
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(inputPath);
+        launcher.getEnvironment().setAutoImports(true);
+        launcher.addProcessor(new ConstructorInstrumentationProcessor());
+        launcher.setSourceOutputDirectory(outputPath);
+        launcher.run();
+    }
+
+    /*public static void main(String[] args) {
         if (args == null || args.length < 2) {
             log.error("Not enough arguments provided. Exiting the application");
             System.exit(1);
@@ -66,6 +82,6 @@ public class Main {
         return ctClass.getFields().stream()
                 .map(CtField::getReference)
                 .anyMatch(field -> field.equals(fieldRef));
-    }
+    }*/
 
 }
