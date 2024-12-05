@@ -9,6 +9,7 @@ import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtField;
 import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.Factory;
+import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
@@ -28,15 +29,35 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess) {
                 if (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null) {
-                    log.info(String.valueOf(assignment));
-                    CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment);
+                    CtTypeReference<?> declaringTypeReference = constructor.getDeclaringType().getReference();
+                    CtExpression<?> thisReference = factory.createThisAccess(declaringTypeReference);
+                    CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment, thisReference);
+                    log.info("registerInvocation: {}", registerInvocation);
                     assignment.replace(registerInvocation);
                 }
             }
         }
     }
 
-    private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment) {
+    private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment, CtExpression<?> thisReference) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
+        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
+        CtExecutableReference<?> registerMethod = factory.Executable().createReference(
+                registerUtilsType,
+                voidType,
+                "register"
+        );
+        CtAssignment<?, ?> newAssignment = assignment.clone();
+        CtInvocation<?> registerInvocation = factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                registerMethod,
+                thisReference,
+                newAssignment
+        );
+        return registerInvocation;
+    }
+
+    /*private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment) {
         // Create a reference to the "register" method
         CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
@@ -55,5 +76,5 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         invocation.addArgument(assignment);
 
         return invocation;
-    }
+    }*/
 }
