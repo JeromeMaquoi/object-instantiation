@@ -14,7 +14,7 @@ repo_path="/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentin
 input_repo_path="${repo_path}${project_name}"
 input_source_code="${input_repo_path}${src_folder_path}/src/main/java/"
 
-output_repo_path="${repo_path}${project_name} output"
+output_repo_path="${repo_path}${project_name}_output"
 output_source_code="${output_repo_path}${src_folder_path}/src/main/java/"
 
 # Remove old output folder
@@ -42,12 +42,11 @@ echo "cp -r ${register_path} ${output_source_code}/be/unamur/snail/register"
 cp -r "$register_path" "${output_source_code}/be/unamur/snail/register/"
 
 # Execute spring-boot tests with the transformation
-#cd "$output_repo_path" || return
-#pwd
-#
-#export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
-#echo "./gradlew clean spring-boot-project:spring-boot:test"
-#./gradlew clean spring-boot-project:spring-boot:test
+cd "$output_repo_path" || return
+rm -rf .gradle/
+export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
+echo "./gradlew clean spring-boot-project:spring-boot:test"
+./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
 
 #export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 #mvn clean test

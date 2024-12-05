@@ -27,9 +27,14 @@ public class Main {
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(inputPath);
-        launcher.getEnvironment().setAutoImports(true);
-        launcher.addProcessor(new ConstructorInstrumentationProcessor());
         launcher.setSourceOutputDirectory(outputPath);
+
+        //launcher.getEnvironment().setNoClasspath(false);
+        launcher.getEnvironment().setAutoImports(false);
+        launcher.getEnvironment().setPreserveLineNumbers(true);
+        launcher.getEnvironment().setCommentEnabled(false);
+
+        launcher.addProcessor(new ConstructorInstrumentationProcessor());
         launcher.run();
     }
 
