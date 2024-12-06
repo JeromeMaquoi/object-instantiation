@@ -21,7 +21,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
     @Override
     public void process(CtConstructor<?> constructor) {
-        log.info("Constructor : {}", constructor.getSignature());
+        //log.info("Constructor : {}", constructor.getSignature());
         if (constructor.getBody() == null) return;
 
         Factory factory = getFactory();
@@ -32,7 +32,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                     CtTypeReference<?> declaringTypeReference = constructor.getDeclaringType().getReference();
                     CtExpression<?> thisReference = factory.createThisAccess(declaringTypeReference);
                     CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment, thisReference);
-                    log.info("registerInvocation: {}", registerInvocation);
+                    //log.info("registerInvocation: {}", registerInvocation);
                     assignment.replace(registerInvocation);
                 }
             }

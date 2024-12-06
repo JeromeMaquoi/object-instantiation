@@ -3,36 +3,30 @@ package be.unamur.snail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spoon.Launcher;
-import spoon.reflect.CtModel;
-import spoon.reflect.code.CtAssignment;
-import spoon.reflect.code.CtExpression;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtConstructor;
-import spoon.reflect.declaration.CtField;
-import spoon.reflect.reference.CtFieldReference;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 
 public class Main {
     private static final Logger log = LoggerFactory.getLogger(Main.class);
 
-    public static void main(final String[] args) {
-        if (args == null || args.length < 2) {
+    public static void main(final String[] args) throws IOException {
+        if (args == null || args.length < 3) {
             log.error("Not enough arguments provided. Exiting the application");
             System.exit(1);
         }
         String inputPath = args[0];
         String outputPath = args[1];
+        String inputRepoPath = args[2];
 
         Launcher launcher = new Launcher();
         launcher.addInputResource(inputPath);
         launcher.setSourceOutputDirectory(outputPath);
 
-        //launcher.getEnvironment().setNoClasspath(false);
-        launcher.getEnvironment().setAutoImports(false);
-        launcher.getEnvironment().setPreserveLineNumbers(true);
-        launcher.getEnvironment().setCommentEnabled(false);
+        List<String> classpaths = Files.readAllLines(Paths.get(inputRepoPath + "/classpath.txt"));
+        launcher.getEnvironment().setSourceClasspath(classpaths.toArray(new String[0]));
 
         launcher.addProcessor(new ConstructorInstrumentationProcessor());
         launcher.run();
