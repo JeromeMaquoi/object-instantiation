@@ -13,7 +13,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <start-class>com.snail.objectinstantiation.Main</start-class>
+        <start-class>be.unamur.snail.Main</start-class>
         <spring-boot.version>3.1.1</spring-boot.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
     </properties>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>fr.inria.gforge.spoon</groupId>
             <artifactId>spoon-core</artifactId>
-            <version>10.1.0</version>
+            <version>11.0.1-beta-12</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
