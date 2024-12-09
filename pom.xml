@@ -16,6 +16,8 @@
         <start-class>be.unamur.snail.Main</start-class>
         <spring-boot.version>3.1.1</spring-boot.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
+        <sonar.organization>jeromemaquoi</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
