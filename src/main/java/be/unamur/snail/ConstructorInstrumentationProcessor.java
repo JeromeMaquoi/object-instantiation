@@ -56,25 +56,4 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
         return registerInvocation;
     }
-
-    /*private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment) {
-        // Create a reference to the "register" method
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
-        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
-        // Create a static method reference to "register"
-        CtInvocation<Void> invocation = factory.Core().createInvocation();
-
-        invocation.setExecutable(
-                factory.Executable().createReference(registerUtilsType, voidType, "register")
-        );
-
-        // Pass "this" as the first argument
-        CtThisAccess<?> thisAccess = factory.Code().createThisAccess(factory.Type().createReference(assignment.getParent(CtConstructor.class).getDeclaringType()));
-        invocation.addArgument(thisAccess);
-
-        // Pass the original assignment as the second argument
-        invocation.addArgument(assignment);
-
-        return invocation;
-    }*/
 }
