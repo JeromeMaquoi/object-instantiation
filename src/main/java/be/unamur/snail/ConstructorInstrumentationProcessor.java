@@ -20,7 +20,6 @@ import java.util.List;
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final String LOG_COUNT_FILE_PATH = "assignment_counts.csv";
-    private static final String CSV_FILE_PATH = "attributes_assignments.csv";
 
     @Override
     public void process(CtConstructor<?> constructor) {
@@ -49,7 +48,6 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             }
         }
         //writeCountToFile(constructor.getSignature(), assignmentCount);
-        writeAttributesToCsv(csvData);
     }
 
     private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment, CtExpression<?> thisReference, String constructorName, String fieldName, String fieldType) {
@@ -65,7 +63,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 factory.Code().createTypeAccess(registerUtilsType),
                 registerMethod,
                 thisReference,
-                newAssignment
+                newAssignment,
+                factory.Code().createLiteral(constructorName),
+                factory.Code().createLiteral(fieldName),
+                factory.Code().createLiteral(fieldType)
         );
         return registerInvocation;
     }
@@ -82,23 +83,6 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             writer.newLine();
         } catch (IOException e) {
             log.error("Failed to write counts to CSV: {}", e.getMessage());
-        }
-    }
-
-    private void writeAttributesToCsv(List<String[]> data) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE_PATH, true))) {
-            log.info("data : {}", data);
-            File csvFile = new File(CSV_FILE_PATH);
-            if (csvFile.length() == 0) {
-                writer.write("Constructor signature,Attribute name,Attribute Type");
-                writer.newLine();
-            }
-            for (String[] row : data) {
-                writer.write(String.format("\"%s\",\"%s\",\"%s\"", row[0], row[1], row[2]));
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            log.error("Failed to write CSV file: {}", e.getMessage());
         }
     }
 }
