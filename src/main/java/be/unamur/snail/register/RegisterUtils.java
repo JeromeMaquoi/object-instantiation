@@ -24,7 +24,7 @@ public class RegisterUtils {
 
     public static void register(Object currentObject, Object fieldInitialization, String constructorSignature, String attributeName, String attributeType) {
         String content = String.format("Constructor : %s, field name : %s, field type : %s", constructorSignature, attributeName, attributeType);
-        log.info(content);
+//        log.info(content);
 //        writeAttributesToCsv(constructorSignature, attributeName, attributeType);
         try {
             Map<String, String> payload = new HashMap<>();
@@ -32,7 +32,7 @@ public class RegisterUtils {
             payload.put("attributeName", attributeName);
             payload.put("attributeType", attributeType);
 
-            log.info(HttpClientService.post(apiURL, payload));
+            HttpClientService.post(apiURL, payload);
         } catch (Exception e) {
             log.error("Error while calling the API : {}", e.getMessage());
         }
@@ -53,13 +53,10 @@ public class RegisterUtils {
     }
 
     static class HttpClientService {
-        private static HttpClient httpClient;
-        private static ObjectMapper objectMapper;
+        private static final HttpClient httpClient = HttpClient.newHttpClient();
+        private static final ObjectMapper objectMapper = new ObjectMapper();
 
-        HttpClientService() {
-            httpClient = HttpClient.newHttpClient();
-            this.objectMapper = new ObjectMapper();
-        }
+        private HttpClientService() {}
 
         public static String post(String url, Object payload) throws Exception {
             // Convert the payload to JSON
