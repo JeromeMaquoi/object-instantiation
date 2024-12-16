@@ -27,30 +27,33 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         if (constructor.getBody() == null) return;
 
         int assignmentCount = 0;
-        List<String[]> csvData = new ArrayList<>();
         Factory factory = getFactory();
+        String constructorSignature = constructor.getSignature();
+        String constructorName = constructor.getSimpleName();
+        String className = constructor.getDeclaringType().getSimpleName();
+
+        String fileName = "Unknown File";
+        if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
+            fileName = constructor.getPosition().getFile().getPath();
+        }
 
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
-            if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess) {
-                if (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null) {
+            if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
                     assignmentCount++;
-                    String constructorName = constructor.getSignature();
                     String fieldName = fieldAccess.getVariable().getSimpleName();
                     String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
-                    csvData.add(new String[]{constructorName, fieldName, fieldType});
 
                     CtTypeReference<?> declaringTypeReference = constructor.getDeclaringType().getReference();
-                    CtExpression<?> thisReference = factory.createThisAccess(declaringTypeReference);
-                    CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment, thisReference, constructorName, fieldName, fieldType);
+                    //CtExpression<?> thisReference = factory.createThisAccess(declaringTypeReference);
+                    CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment, constructorSignature, constructorName, className, fileName, fieldName, fieldType);
                     //log.info("registerInvocation: {}", registerInvocation);
                     assignment.replace(registerInvocation);
                 }
-            }
         }
         //writeCountToFile(constructor.getSignature(), assignmentCount);
     }
 
-    private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment, CtExpression<?> thisReference, String constructorName, String fieldName, String fieldType) {
+    private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment, String constructorSignature, String constructorName, String className, String fileName, String fieldName, String fieldType) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> registerMethod = factory.Executable().createReference(
@@ -59,16 +62,17 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 "register"
         );
         CtAssignment<?, ?> newAssignment = assignment.clone();
-        CtInvocation<?> registerInvocation = factory.Code().createInvocation(
+        return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
                 registerMethod,
-                thisReference,
                 newAssignment,
+                factory.Code().createLiteral(constructorSignature),
                 factory.Code().createLiteral(constructorName),
+                factory.Code().createLiteral(className),
+                factory.Code().createLiteral(fileName),
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType)
         );
-        return registerInvocation;
     }
 
     private void writeCountToFile(String constructorSignature, int count) {

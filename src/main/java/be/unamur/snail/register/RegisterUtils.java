@@ -20,15 +20,18 @@ public class RegisterUtils {
     private final static Logger log = LoggerFactory.getLogger(RegisterUtils.class);
     private static final String LOG_FILE_PATH = "log_output.txt";
     private static final String CSV_FILE_PATH = "attributes_assignments.csv";
-    private static final String apiURL = "http://localhost:8080/api/v1/constructor-attributes";
+    private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
-    public static void register(Object currentObject, Object fieldInitialization, String constructorSignature, String attributeName, String attributeType) {
+    public static void register(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
         String content = String.format("Constructor : %s, field name : %s, field type : %s", constructorSignature, attributeName, attributeType);
 //        log.info(content);
 //        writeAttributesToCsv(constructorSignature, attributeName, attributeType);
         try {
             Map<String, String> payload = new HashMap<>();
             payload.put("constructorSignature", constructorSignature);
+            payload.put("constructorName", constructorName);
+            payload.put("constructorClassName", constructorClassName);
+            payload.put("constructorFileName", constructorFileName);
             payload.put("attributeName", attributeName);
             payload.put("attributeType", attributeType);
 
