@@ -17,13 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 public class RegisterUtils {
-    private final static Logger log = LoggerFactory.getLogger(RegisterUtils.class);
-    private static final String LOG_FILE_PATH = "log_output.txt";
-    private static final String CSV_FILE_PATH = "attributes_assignments.csv";
+    private static final Logger log = LoggerFactory.getLogger(RegisterUtils.class);
+//    private static final String LOG_FILE_PATH = "log_output.txt";
+//    private static final String CSV_FILE_PATH = "attributes_assignments.csv";
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
+    private RegisterUtils() {}
+
     public static void register(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
-        String content = String.format("Constructor : %s, field name : %s, field type : %s", constructorSignature, attributeName, attributeType);
+//        String content = String.format("Constructor : %s, field name : %s, field type : %s", constructorSignature, attributeName, attributeType);
 //        log.info(content);
 //        writeAttributesToCsv(constructorSignature, attributeName, attributeType);
         try {
@@ -41,7 +43,7 @@ public class RegisterUtils {
         }
     }
 
-    private void writeAttributesToCsv(String constructorName, String fieldName, String fieldType) {
+    /*private void writeAttributesToCsv(String constructorName, String fieldName, String fieldType) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(CSV_FILE_PATH, true))) {
             File csvFile = new File(CSV_FILE_PATH);
             if (csvFile.length() == 0) {
@@ -53,9 +55,9 @@ public class RegisterUtils {
         } catch (IOException e) {
             log.error("Failed to write CSV file: {}", e.getMessage());
         }
-    }
+    }*/
 
-    static class HttpClientService {
+    public static class HttpClientService {
         private static final HttpClient httpClient = HttpClient.newHttpClient();
         private static final ObjectMapper objectMapper = new ObjectMapper();
 
