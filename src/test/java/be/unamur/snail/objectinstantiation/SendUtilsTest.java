@@ -1,5 +1,6 @@
 package be.unamur.snail.objectinstantiation;
 
+import be.unamur.snail.register.HttpClientService;
 import be.unamur.snail.register.SendUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +13,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
-    private SendUtils.HttpClientService httpClientService;
+    private HttpClientService httpClientService;
 
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
@@ -27,7 +28,7 @@ class SendUtilsTest {
 
     @BeforeEach
     void setUp() {
-        httpClientService = mock(SendUtils.HttpClientService.class);
+        httpClientService = mock(HttpClientService.class);
 
         constructorSignature = "constructorSignature";
         constructorName = "constructorName";
@@ -47,11 +48,11 @@ class SendUtilsTest {
 
     @Test
     void prepareSuccessfulPostTest() {
-        try (MockedStatic<SendUtils.HttpClientService> mockedStatic = mockStatic(SendUtils.HttpClientService.class)) {
-            mockedStatic.when(() -> SendUtils.HttpClientService.post(eq(apiURL), any(Map.class))).thenReturn("Success");
+        try (MockedStatic<HttpClientService> mockedStatic = mockStatic(HttpClientService.class)) {
+            mockedStatic.when(() -> HttpClientService.post(eq(apiURL), any(Map.class))).thenReturn("Success");
             SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
 
-            mockedStatic.verify(() -> SendUtils.HttpClientService.post(eq(apiURL), eq(payload)), times(1));
+            mockedStatic.verify(() -> HttpClientService.post(eq(apiURL), eq(payload)), times(1));
         }
     }
 
