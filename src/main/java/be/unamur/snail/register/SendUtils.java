@@ -4,27 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class RegisterUtils {
-    private static final Logger log = LoggerFactory.getLogger(RegisterUtils.class);
+public static class SendUtils {
+    private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 //    private static final String LOG_FILE_PATH = "log_output.txt";
 //    private static final String CSV_FILE_PATH = "attributes_assignments.csv";
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
-    private RegisterUtils() {}
+    private SendUtils() {}
 
-    public static void register(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
+    public static void prepare(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
 //        String content = String.format("Constructor : %s, field name : %s, field type : %s", constructorSignature, attributeName, attributeType);
 //        log.info(content);
 //        writeAttributesToCsv(constructorSignature, attributeName, attributeType);
@@ -36,7 +31,6 @@ public class RegisterUtils {
             payload.put("constructorFileName", constructorFileName);
             payload.put("attributeName", attributeName);
             payload.put("attributeType", attributeType);
-
             HttpClientService.post(apiURL, payload);
         } catch (Exception e) {
             log.error("Error while calling the API : {}", e.getMessage());

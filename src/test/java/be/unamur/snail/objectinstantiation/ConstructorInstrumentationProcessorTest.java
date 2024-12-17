@@ -53,7 +53,7 @@ class ConstructorInstrumentationProcessorTest {
         long invocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("register"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
                 .count();
         assertEquals(1, invocationCount, "Constructor should contain one 'register' invocation");
 

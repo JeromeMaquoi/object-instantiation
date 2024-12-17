@@ -1,6 +1,8 @@
 public class TestConstructorClass {
-    private String field;
+    private String field1;
+    private int field2;
     public TestConstructorClass() {
-        this.field = "value";
+        this.field1 = "value";
+        this.field2 = 0;
     }
 }

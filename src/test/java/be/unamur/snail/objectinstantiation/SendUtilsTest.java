@@ -1,12 +1,9 @@
 package be.unamur.snail.objectinstantiation;
 
-import be.unamur.snail.register.RegisterUtils;
+import be.unamur.snail.register.SendUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
-import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,8 +11,8 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
-class RegisterUtilsTest {
-    private RegisterUtils.HttpClientService httpClientService;
+class SendUtilsTest {
+    private SendUtils.HttpClientService httpClientService;
 
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
@@ -30,7 +27,7 @@ class RegisterUtilsTest {
 
     @BeforeEach
     void setUp() {
-        httpClientService = mock(RegisterUtils.HttpClientService.class);
+        httpClientService = mock(SendUtils.HttpClientService.class);
 
         constructorSignature = "constructorSignature";
         constructorName = "constructorName";
@@ -49,12 +46,12 @@ class RegisterUtilsTest {
     }
 
     @Test
-    void registerSuccessfulPostTest() {
-        try (MockedStatic<RegisterUtils.HttpClientService> mockedStatic = mockStatic(RegisterUtils.HttpClientService.class)) {
-            mockedStatic.when(() -> RegisterUtils.HttpClientService.post(eq(apiURL), any(Map.class))).thenReturn("Success");
-            RegisterUtils.register(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
+    void prepareSuccessfulPostTest() {
+        try (MockedStatic<SendUtils.HttpClientService> mockedStatic = mockStatic(SendUtils.HttpClientService.class)) {
+            mockedStatic.when(() -> SendUtils.HttpClientService.post(eq(apiURL), any(Map.class))).thenReturn("Success");
+            SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
 
-            mockedStatic.verify(() -> RegisterUtils.HttpClientService.post(eq(apiURL), eq(payload)), times(1));
+            mockedStatic.verify(() -> SendUtils.HttpClientService.post(eq(apiURL), eq(payload)), times(1));
         }
     }
 
