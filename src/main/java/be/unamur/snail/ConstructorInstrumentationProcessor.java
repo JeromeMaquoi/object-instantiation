@@ -75,7 +75,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private void writeCountToFile(String constructorSignature, int count) {
+    /*private void writeCountToFile(String constructorSignature, int count) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_COUNT_FILE_PATH, true))) {
             log.info("Writing {} to CSV file", constructorSignature);
             File csvFile = new File(LOG_COUNT_FILE_PATH);
@@ -88,5 +88,5 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         } catch (IOException e) {
             log.error("Failed to write counts to CSV: {}", e.getMessage());
         }
-    }
+    }*/
 }
