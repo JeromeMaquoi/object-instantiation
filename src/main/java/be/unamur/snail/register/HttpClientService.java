@@ -6,6 +6,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 
 public class HttpClientService {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
@@ -13,10 +15,7 @@ public class HttpClientService {
 
     private HttpClientService() {}
 
-    public static String post(String url, Object payload) throws Exception {
-        // Convert the payload to JSON
-        String jsonPayload = objectMapper.writeValueAsString(payload);
-
+    public static String post(String url, String jsonPayload) throws Exception {
         // Build the HTTP request
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
