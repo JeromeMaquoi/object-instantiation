@@ -6,13 +6,11 @@ import be.unamur.snail.register.HttpClientService;
 import be.unamur.snail.register.SendUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,17 +19,12 @@ import static org.mockito.Mockito.*;
 class SendUtilsTest {
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
-    private Map<String, String> payload;
-
     private String constructorSignature;
     private String constructorName;
     private String constructorClassName;
     private String constructorFileName;
     private String attributeName;
     private String attributeType;
-
-    @Mock
-    private HttpClientService httpClientServiceMock;
 
     @BeforeEach
     void setUp() {
@@ -43,6 +36,8 @@ class SendUtilsTest {
         constructorFileName = "constructorFileName";
         attributeName = "attributeName";
         attributeType = "attributeType";
+
+        SendUtils.setConstructorEntityDTO();
     }
 
     @Test

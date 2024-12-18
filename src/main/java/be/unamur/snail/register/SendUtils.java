@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 
 public class SendUtils {
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
-    private static final ConstructorEntityDTO constructorEntityDTO = new ConstructorEntityDTO();
+    private static ConstructorEntityDTO constructorEntityDTO = new ConstructorEntityDTO();
 
     private SendUtils() {}
 
@@ -17,6 +17,10 @@ public class SendUtils {
 
     public static ConstructorEntityDTO getConstructorEntityDTO() {
         return constructorEntityDTO;
+    }
+
+    public static void setConstructorEntityDTO() {
+        constructorEntityDTO = new ConstructorEntityDTO();
     }
 
     public static void prepare(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
