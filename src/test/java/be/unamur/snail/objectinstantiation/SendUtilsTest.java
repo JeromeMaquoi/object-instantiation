@@ -1,21 +1,24 @@
 package be.unamur.snail.objectinstantiation;
 
+import be.unamur.snail.register.AttributeEntityDTO;
+import be.unamur.snail.register.ConstructorEntityDTO;
 import be.unamur.snail.register.HttpClientService;
 import be.unamur.snail.register.SendUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
-    private HttpClientService httpClientService;
-
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
     private Map<String, String> payload;
@@ -27,9 +30,12 @@ class SendUtilsTest {
     private String attributeName;
     private String attributeType;
 
+    @Mock
+    private HttpClientService httpClientServiceMock;
+
     @BeforeEach
     void setUp() {
-        httpClientService = mock(HttpClientService.class);
+        MockitoAnnotations.openMocks(this);
 
         constructorSignature = "constructorSignature";
         constructorName = "constructorName";
@@ -37,26 +43,50 @@ class SendUtilsTest {
         constructorFileName = "constructorFileName";
         attributeName = "attributeName";
         attributeType = "attributeType";
-
-        payload = new HashMap<>();
-        payload.put("constructorSignature", constructorSignature);
-        payload.put("constructorName", constructorName);
-        payload.put("constructorClassName", constructorClassName);
-        payload.put("constructorFileName", constructorFileName);
-        payload.put("attributeName", attributeName);
-        payload.put("attributeType", attributeType);
     }
 
-    /*@Test
-    void prepareSuccessfulPostTest() {
-        try (MockedStatic<HttpClientService> mockedStatic = mockStatic(HttpClientService.class)) {
-            mockedStatic.when(() -> HttpClientService.post(eq(apiURL), anyString())).thenReturn("Success");
+    @Test
+    void prepareWorkingTest() {
+        SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
+        ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
+        assertNotNull(constructorEntityDTO);
+        assertEquals(constructorSignature, constructorEntityDTO.getSignature());
+        assertEquals(constructorName, constructorEntityDTO.getName());
+        assertEquals(constructorClassName, constructorEntityDTO.getClassName());
+        assertEquals(constructorFileName, constructorEntityDTO.getFileName());
+
+        List<AttributeEntityDTO> attributeEntities = new ArrayList<>(constructorEntityDTO.getAttributeEntities());
+
+        assertNotNull(attributeEntities);
+        assertEquals(1, attributeEntities.size());
+        assertEquals(attributeName, attributeEntities.get(0).getName());
+        assertEquals(attributeType, attributeEntities.get(0).getType());
+    }
+
+    @Test
+    void sendWorkingTest() throws Exception {
+        try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
             SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
+            String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
 
-            mockedStatic.verify(() -> HttpClientService.post(eq(apiURL), eq(payload)), times(1));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            mockedHttpClientServiceMock.when(() -> HttpClientService.post(apiURL, jsonPayload)).thenReturn("Success");
+
+            SendUtils.send();
+
+            mockedHttpClientServiceMock.verify(() -> HttpClientService.post(eq(apiURL), anyString()), times(1));
         }
-    }*/
+    }
 
+    @Test
+    void sendThrowsExceptionTest() throws Exception {
+        try(MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
+            String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"field1\",\"type\":\"String\"}]}";
+            mockedHttpClientServiceMock.when(() -> HttpClientService.post(eq(SendUtils.getApiURL()), anyString())).thenThrow(new RuntimeException("HTTP error"));
+
+            // Assert that an exception is thrown when calling send
+            RuntimeException thrown = assertThrows(RuntimeException.class, SendUtils::send);
+
+            assertEquals("java.lang.RuntimeException: HTTP error", thrown.getMessage());
+        }
+    }
 }

@@ -6,13 +6,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SendUtils {
-    private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
     private static final ConstructorEntityDTO constructorEntityDTO = new ConstructorEntityDTO();
 
     private SendUtils() {}
 
-    public static void prepare(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) throws JsonProcessingException {
+    public static String getApiURL() {
+        return apiURL;
+    }
+
+    public static ConstructorEntityDTO getConstructorEntityDTO() {
+        return constructorEntityDTO;
+    }
+
+    public static void prepare(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
         AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType);
 
         if (constructorEntityDTO.isEmpty()) {
