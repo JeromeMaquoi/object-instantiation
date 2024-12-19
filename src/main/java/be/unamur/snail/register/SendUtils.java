@@ -23,7 +23,7 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
-    public static void addAttribute(Object fieldInitialization, String attributeName, String attributeType) {
+    public static void addAttribute(String attributeName, String attributeType) {
         assert !constructorEntityDTO.isEmpty();
         AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType);
         constructorEntityDTO.addAttributeEntity(attributePayload);

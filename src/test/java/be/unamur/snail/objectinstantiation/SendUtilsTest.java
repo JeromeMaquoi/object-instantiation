@@ -40,7 +40,7 @@ class SendUtilsTest {
 
     @Test
     void addAttributeWorkingTest() {
-        SendUtils.addAttribute(null, attributeName, attributeType);
+        SendUtils.addAttribute(attributeName, attributeType);
         ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
         assertNotNull(constructorEntityDTO);
         assertEquals(constructorSignature, constructorEntityDTO.getSignature());
@@ -58,7 +58,7 @@ class SendUtilsTest {
     @Test
     void sendWorkingTest() {
         try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            SendUtils.addAttribute(null, attributeName, attributeType);
+            SendUtils.addAttribute(attributeName, attributeType);
             String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
 
             mockedHttpClientServiceMock.when(() -> HttpClientService.post(apiURL, jsonPayload)).thenReturn("Success");
