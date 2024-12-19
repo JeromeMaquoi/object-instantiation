@@ -33,8 +33,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, assignment, fieldName, fieldType);
-                assignment.replace(prepareMethodInvocation);
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, fieldName, fieldType);
+                assignment.insertAfter(prepareMethodInvocation);
             }
         }
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
@@ -57,19 +57,17 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtAssignment<?, ?> assignment, String fieldName, String fieldType) {
+    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, String fieldName, String fieldType) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
-        CtExecutableReference<?> registerMethod = factory.Executable().createReference(
+        CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
                 registerUtilsType,
                 voidType,
                 "addAttribute"
         );
-        CtAssignment<?, ?> newAssignment = assignment.clone();
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
-                registerMethod,
-                newAssignment,
+                addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType)
         );

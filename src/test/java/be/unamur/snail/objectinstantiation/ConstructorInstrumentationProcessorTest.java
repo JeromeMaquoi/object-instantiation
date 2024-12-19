@@ -42,12 +42,17 @@ class ConstructorInstrumentationProcessorTest {
     }
 
     @Test
-    void simpleConstructorTest() throws IOException {
-        Path outputFile = outputPath.resolve("TestConstructorClassWithAssignments.java");
+    void constructorWithAssignmentsTest() throws IOException {
+        String className = "TestConstructorClassWithAssignments";
+        Path outputFile = outputPath.resolve("test/"+className+".java");
         assertTrue(Files.exists(outputFile), "Output file should be generated");
 
         CtModel model = launcher.getModel();
-        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class)).get(0);
+        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class))
+                .stream()
+                .filter(c -> c.getSimpleName().equals(className))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Class "+className+" not found in the model"));
         CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
 
         long initConstructorInvocationCount = constructor.getBody()
@@ -77,11 +82,16 @@ class ConstructorInstrumentationProcessorTest {
 
     @Test
     void constructorWithoutAssignmentsTest() throws IOException {
-        Path outputFile = outputPath.resolve("TestEmptyConstructorClass.java");
+        String className = "TestEmptyConstructorClass";
+        Path outputFile = outputPath.resolve("test/empty/"+className+".java");
         assertTrue(Files.exists(outputFile), "Output file should be generated");
 
         CtModel model = launcher.getModel();
-        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class)).get(0);
+        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class))
+                .stream()
+                .filter(c -> c.getSimpleName().equals(className))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Class TestEmptyConstructorClass not found in the model"));
         CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
 
         long initConstructorInvocationCount = constructor.getBody()
