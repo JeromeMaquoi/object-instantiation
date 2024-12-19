@@ -1,4 +1,4 @@
-public class TestConstructorClass {
+public class TestConstructorClassWithAssignments {
     private String field1;
     private int field2;
     public TestConstructorClass() {
