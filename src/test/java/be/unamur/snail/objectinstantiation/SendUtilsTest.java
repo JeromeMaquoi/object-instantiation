@@ -73,15 +73,14 @@ class SendUtilsTest {
     }
 
     @Test
-    void sendThrowsExceptionTest() throws Exception {
+    void sendThrowsExceptionTest() {
         try(MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"field1\",\"type\":\"String\"}]}";
             mockedHttpClientServiceMock.when(() -> HttpClientService.post(eq(SendUtils.getApiURL()), anyString())).thenThrow(new RuntimeException("HTTP error"));
 
             // Assert that an exception is thrown when calling send
             RuntimeException thrown = assertThrows(RuntimeException.class, SendUtils::send);
 
-            assertEquals("java.lang.RuntimeException: HTTP error", thrown.getMessage());
+            assertEquals("Empty constructor entity exception java.lang.RuntimeException: HTTP error", thrown.getMessage());
         }
     }
 }

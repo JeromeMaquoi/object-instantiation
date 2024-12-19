@@ -41,7 +41,7 @@ public class SendUtils {
             String json = objectMapper.writeValueAsString(constructorEntityDTO);
             HttpClientService.post(apiURL, json);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new EmptyConstructorEntityDTOException(e);
         }
     }
 }
