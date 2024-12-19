@@ -8,6 +8,8 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
+import java.util.stream.Collectors;
+
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
 //    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private static final String PKG = "be.unamur.snail.register.SendUtils";
@@ -17,8 +19,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         if (constructor.getBody() == null) return;
 
         Factory factory = getFactory();
-        String constructorSignature = constructor.getSignature();
-        String className = constructor.getDeclaringType().getSimpleName();
+        String constructorSignature = getSimpleConstructorSignature(constructor);
+        String className = constructor.getDeclaringType().getQualifiedName();
 
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
@@ -39,6 +41,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         }
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
         constructor.getBody().addStatement(sendInvocation);
+    }
+
+    private String getSimpleConstructorSignature(CtConstructor<?> constructor) {
+        return constructor.getDeclaringType().getSimpleName() + "(" + constructor.getParameters().stream().map(param -> param.getType().getQualifiedName()).collect(Collectors.joining(", ")) + ")";
     }
 
     private CtInvocation<?> createInitConstructorEntityDTOInvocation(Factory factory, String constructorSignature, String className, String fileName) {
