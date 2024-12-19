@@ -20,7 +20,6 @@ class SendUtilsTest {
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
     private String constructorSignature;
-    private String constructorName;
     private String constructorClassName;
     private String constructorFileName;
     private String attributeName;
@@ -31,22 +30,20 @@ class SendUtilsTest {
         MockitoAnnotations.openMocks(this);
 
         constructorSignature = "constructorSignature";
-        constructorName = "constructorName";
         constructorClassName = "constructorClassName";
         constructorFileName = "constructorFileName";
         attributeName = "attributeName";
         attributeType = "attributeType";
 
-        SendUtils.setConstructorEntityDTO();
+        SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
     }
 
     @Test
-    void prepareWorkingTest() {
-        SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
+    void addAttributeWorkingTest() {
+        SendUtils.addAttribute(null, attributeName, attributeType);
         ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
         assertNotNull(constructorEntityDTO);
         assertEquals(constructorSignature, constructorEntityDTO.getSignature());
-        assertEquals(constructorName, constructorEntityDTO.getName());
         assertEquals(constructorClassName, constructorEntityDTO.getClassName());
         assertEquals(constructorFileName, constructorEntityDTO.getFileName());
 
@@ -59,9 +56,9 @@ class SendUtilsTest {
     }
 
     @Test
-    void sendWorkingTest() throws Exception {
+    void sendWorkingTest() {
         try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            SendUtils.prepare(null, constructorSignature, constructorName, constructorClassName, constructorFileName, attributeName, attributeType);
+            SendUtils.addAttribute(null, attributeName, attributeType);
             String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
 
             mockedHttpClientServiceMock.when(() -> HttpClientService.post(apiURL, jsonPayload)).thenReturn("Success");

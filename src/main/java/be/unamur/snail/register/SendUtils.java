@@ -1,13 +1,10 @@
 package be.unamur.snail.register;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class SendUtils {
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
-    private static ConstructorEntityDTO constructorEntityDTO = new ConstructorEntityDTO();
+    private static ConstructorEntityDTO constructorEntityDTO;
 
     private SendUtils() {}
 
@@ -19,19 +16,16 @@ public class SendUtils {
         return constructorEntityDTO;
     }
 
-    public static void setConstructorEntityDTO() {
+    public static void initConstructorEntityDTO(String signature, String className, String fileName) {
         constructorEntityDTO = new ConstructorEntityDTO();
+        constructorEntityDTO.setSignature(signature);
+        constructorEntityDTO.setClassName(className);
+        constructorEntityDTO.setFileName(fileName);
     }
 
-    public static void prepare(Object fieldInitialization, String constructorSignature, String constructorName, String constructorClassName, String constructorFileName, String attributeName, String attributeType) {
+    public static void addAttribute(Object fieldInitialization, String attributeName, String attributeType) {
+        assert !constructorEntityDTO.isEmpty();
         AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType);
-
-        if (constructorEntityDTO.isEmpty()) {
-            constructorEntityDTO.setName(constructorName);
-            constructorEntityDTO.setSignature(constructorSignature);
-            constructorEntityDTO.setClassName(constructorClassName);
-            constructorEntityDTO.setFileName(constructorFileName);
-        }
         constructorEntityDTO.addAttributeEntity(attributePayload);
     }
 

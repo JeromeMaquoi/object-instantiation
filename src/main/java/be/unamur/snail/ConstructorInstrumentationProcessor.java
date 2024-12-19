@@ -10,17 +10,14 @@ import spoon.reflect.visitor.filter.TypeFilter;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
 //    private final Logger log = LoggerFactory.getLogger(this.getClass());
-//    private static final String LOG_COUNT_FILE_PATH = "assignment_counts.csv";
     private static final String PKG = "be.unamur.snail.register.SendUtils";
 
     @Override
     public void process(CtConstructor<?> constructor) {
-//        log.info("Constructor : {}", constructor.getSignature());
         if (constructor.getBody() == null) return;
 
         Factory factory = getFactory();
         String constructorSignature = constructor.getSignature();
-        String constructorName = constructor.getSimpleName();
         String className = constructor.getDeclaringType().getSimpleName();
 
         String fileName = "Unknown File";
@@ -28,16 +25,57 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
 
+        CtInvocation<?> initConstructorInvocation = createInitConstructorEntityDTOInvocation(factory, constructorSignature, className, fileName);
+        constructor.getBody().insertBegin(initConstructorInvocation);
+
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createPrepareMethodInvocation(factory, assignment, constructorSignature, constructorName, className, fileName, fieldName, fieldType);
-//                log.info("prepareMethodInvocation: {}", prepareMethodInvocation);
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, assignment, fieldName, fieldType);
                 assignment.replace(prepareMethodInvocation);
             }
         }
+        CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
+        constructor.getBody().addStatement(sendInvocation);
+    }
+
+    private CtInvocation<?> createInitConstructorEntityDTOInvocation(Factory factory, String constructorSignature, String className, String fileName) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> initConstructorMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "initConstructorEntityDTO"
+        );
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                initConstructorMethod,
+                factory.Code().createLiteral(constructorSignature),
+                factory.Code().createLiteral(className),
+                factory.Code().createLiteral(fileName)
+        );
+    }
+
+    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtAssignment<?, ?> assignment, String fieldName, String fieldType) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
+        CtExecutableReference<?> registerMethod = factory.Executable().createReference(
+                registerUtilsType,
+                voidType,
+                "addAttribute"
+        );
+        CtAssignment<?, ?> newAssignment = assignment.clone();
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                registerMethod,
+                newAssignment,
+                factory.Code().createLiteral(fieldName),
+                factory.Code().createLiteral(fieldType)
+        );
+    }
+
+    private CtInvocation<?> createSendMethodInvocation(Factory factory) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> sendMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -45,32 +83,9 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 "send"
         );
 
-        CtInvocation<?> sendInvocation = factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
-                sendMethod
-        );
-        constructor.getBody().addStatement(sendInvocation);
-    }
-
-    private CtInvocation<?> createPrepareMethodInvocation(Factory factory, CtAssignment<?, ?> assignment, String constructorSignature, String constructorName, String className, String fileName, String fieldName, String fieldType) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
-        CtExecutableReference<?> registerMethod = factory.Executable().createReference(
-                registerUtilsType,
-                voidType,
-                "prepare"
-        );
-        CtAssignment<?, ?> newAssignment = assignment.clone();
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
-                registerMethod,
-                newAssignment,
-                factory.Code().createLiteral(constructorSignature),
-                factory.Code().createLiteral(constructorName),
-                factory.Code().createLiteral(className),
-                factory.Code().createLiteral(fileName),
-                factory.Code().createLiteral(fieldName),
-                factory.Code().createLiteral(fieldType)
+                sendMethod
         );
     }
 }
