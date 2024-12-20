@@ -1,5 +1,6 @@
 package be.unamur.snail.register;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -11,7 +12,7 @@ public class HttpClientService {
 
     private HttpClientService() {}
 
-    public static String post(String url, String jsonPayload) throws Exception {
+    public static String post(String url, String jsonPayload) throws IOException, InterruptedException {
         if (jsonPayload != null) {
             // Build the HTTP request
             HttpRequest request = HttpRequest.newBuilder()
@@ -25,6 +26,7 @@ public class HttpClientService {
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
             } else {
+                System.out.println("Error: " + response.statusCode() + " " + response.body());
                 throw new RuntimeException("HTTP error: " + response.statusCode() + ", body: " + response.body());
             }
         }

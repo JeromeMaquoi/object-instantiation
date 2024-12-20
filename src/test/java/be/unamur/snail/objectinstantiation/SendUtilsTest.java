@@ -77,7 +77,7 @@ class SendUtilsTest {
             // Assert that an exception is thrown when calling send
             RuntimeException thrown = assertThrows(RuntimeException.class, SendUtils::send);
 
-            assertEquals("Empty constructor entity exception java.lang.RuntimeException: HTTP error", thrown.getMessage());
+            assertEquals("HTTP error", thrown.getMessage());
         }
     }
 }

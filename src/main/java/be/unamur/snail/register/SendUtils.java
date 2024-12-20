@@ -1,10 +1,17 @@
 package be.unamur.snail.register;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.util.InvalidPropertiesFormatException;
 
 public class SendUtils {
     private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
     private static ConstructorEntityDTO constructorEntityDTO;
+    private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
 
@@ -34,8 +41,14 @@ public class SendUtils {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(constructorEntityDTO);
             HttpClientService.post(apiURL, json);
-        } catch (Exception e) {
-            throw new EmptyConstructorEntityDTOException(e);
+        } catch (InvalidPropertiesFormatException e) {
+            log.error("Error sending JSON to API : {}", e.getMessage());
+        } catch (JsonProcessingException e) {
+            log.error("Error serializeing constructorEntityDTO to JSON: {}", e.getMessage());
+        } catch (IOException e) {
+            log.error("IOException: {}", e.getMessage());
+        } catch (InterruptedException e) {
+            log.error("InterruptedException: {}", e.getMessage());
         }
     }
 }
