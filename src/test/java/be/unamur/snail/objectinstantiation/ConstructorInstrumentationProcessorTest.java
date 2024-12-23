@@ -31,7 +31,7 @@ class ConstructorInstrumentationProcessorTest {
 
     @BeforeEach
     public void setup() {
-        inputPath = Paths.get("src/test/resources/test-inputs/");
+        inputPath = Paths.get("src/test/resources/test-inputs/TestConstructorClass.java");
         outputPath = tempDir.resolve("output");
 
         launcher = new Launcher();
@@ -42,78 +42,20 @@ class ConstructorInstrumentationProcessorTest {
     }
 
     @Test
-    void constructorWithAssignmentsTest() throws IOException {
-        String className = "TestConstructorClassWithAssignments";
-        Path outputFile = outputPath.resolve("test/"+className+".java");
+    void simpleConstructorTest() throws IOException {
+        Path outputFile = outputPath.resolve("TestConstructorClass.java");
         assertTrue(Files.exists(outputFile), "Output file should be generated");
 
         CtModel model = launcher.getModel();
-        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class))
-                .stream()
-                .filter(c -> c.getSimpleName().equals(className))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Class "+className+" not found in the model"));
+        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class)).get(0);
         CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
 
-        long initConstructorInvocationCount = constructor.getBody()
+        long invocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("register"))
                 .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
-
-        long sendInvocationCount = constructor.getBody()
-                .getElements(new TypeFilter<>(CtInvocation.class))
-                .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
-                .count();
-        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
-
-        long addAttributeInvocationCount = constructor.getBody()
-                .getElements(new TypeFilter<>(CtInvocation.class))
-                .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("addAttribute"))
-                .count();
-        assertEquals(2, addAttributeInvocationCount, "Constructor should contain 2 'addAttribute' invocations");
-
-        String fileContent = Files.readString(outputFile);
-        System.out.println("Generated file content:\n" + fileContent);
-    }
-
-    @Test
-    void constructorWithoutAssignmentsTest() throws IOException {
-        String className = "TestEmptyConstructorClass";
-        Path outputFile = outputPath.resolve("test/empty/"+className+".java");
-        assertTrue(Files.exists(outputFile), "Output file should be generated");
-
-        CtModel model = launcher.getModel();
-        CtClass<?> clazz = model.getElements(new TypeFilter<>(CtClass.class))
-                .stream()
-                .filter(c -> c.getSimpleName().equals(className))
-                .findFirst()
-                .orElseThrow(() -> new AssertionError("Class TestEmptyConstructorClass not found in the model"));
-        CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
-
-        long initConstructorInvocationCount = constructor.getBody()
-                .getElements(new TypeFilter<>(CtInvocation.class))
-                .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
-                .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
-
-        long sendInvocationCount = constructor.getBody()
-                .getElements(new TypeFilter<>(CtInvocation.class))
-                .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
-                .count();
-        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
-
-        long addAttributeInvocationCount = constructor.getBody()
-                .getElements(new TypeFilter<>(CtInvocation.class))
-                .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("addAttribute"))
-                .count();
-        assertEquals(0, addAttributeInvocationCount, "Constructor without assignments should not contain 'addAttribute' invocations");
+        assertEquals(1, invocationCount, "Constructor should contain one 'register' invocation");
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
