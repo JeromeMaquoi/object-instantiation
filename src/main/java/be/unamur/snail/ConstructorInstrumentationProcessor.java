@@ -1,7 +1,5 @@
 package be.unamur.snail;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
@@ -10,83 +8,88 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
-    private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private static final String LOG_COUNT_FILE_PATH = "assignment_counts.csv";
+//    private final Logger log = LoggerFactory.getLogger(this.getClass());
+    private static final String PKG = "be.unamur.snail.register.SendUtils";
 
     @Override
     public void process(CtConstructor<?> constructor) {
-        //log.info("Constructor : {}", constructor.getSignature());
         if (constructor.getBody() == null) return;
 
-        int assignmentCount = 0;
         Factory factory = getFactory();
-        String constructorSignature = constructor.getSignature();
-        String constructorName = constructor.getSimpleName();
-        String className = constructor.getDeclaringType().getSimpleName();
+        String constructorSignature = getSimpleConstructorSignature(constructor);
+        String className = constructor.getDeclaringType().getQualifiedName();
 
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
             fileName = constructor.getPosition().getFile().getPath();
         }
 
+        CtInvocation<?> initConstructorInvocation = createInitConstructorEntityDTOInvocation(factory, constructorSignature, className, fileName);
+        constructor.getBody().insertBegin(initConstructorInvocation);
+
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
-                    assignmentCount++;
-                    String fieldName = fieldAccess.getVariable().getSimpleName();
-                    String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
+                String fieldName = fieldAccess.getVariable().getSimpleName();
+                String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                    CtTypeReference<?> declaringTypeReference = constructor.getDeclaringType().getReference();
-                    //CtExpression<?> thisReference = factory.createThisAccess(declaringTypeReference);
-                    CtInvocation<?> registerInvocation = createRegisterInvocation(factory, assignment, constructorSignature, constructorName, className, fileName, fieldName, fieldType);
-                    //log.info("registerInvocation: {}", registerInvocation);
-                    assignment.replace(registerInvocation);
-                }
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, fieldName, fieldType);
+                assignment.insertAfter(prepareMethodInvocation);
+            }
         }
-        //writeCountToFile(constructor.getSignature(), assignmentCount);
+        CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
+        constructor.getBody().addStatement(sendInvocation);
     }
 
-    private CtInvocation<?> createRegisterInvocation(Factory factory, CtAssignment<?, ?> assignment, String constructorSignature, String constructorName, String className, String fileName, String fieldName, String fieldType) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference("be.unamur.snail.register.RegisterUtils");
-        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
-        CtExecutableReference<?> registerMethod = factory.Executable().createReference(
+    private String getSimpleConstructorSignature(CtConstructor<?> constructor) {
+        return constructor.getDeclaringType().getSimpleName() + "(" + constructor.getParameters().stream().map(param -> param.getType().getQualifiedName()).collect(Collectors.joining(", ")) + ")";
+    }
+
+    private CtInvocation<?> createInitConstructorEntityDTOInvocation(Factory factory, String constructorSignature, String className, String fileName) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> initConstructorMethod = factory.Executable().createReference(
                 registerUtilsType,
-                voidType,
-                "register"
+                factory.Type().voidPrimitiveType(),
+                "initConstructorEntityDTO"
         );
-        CtAssignment<?, ?> newAssignment = assignment.clone();
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
-                registerMethod,
-                newAssignment,
+                initConstructorMethod,
                 factory.Code().createLiteral(constructorSignature),
-                factory.Code().createLiteral(constructorName),
                 factory.Code().createLiteral(className),
-                factory.Code().createLiteral(fileName),
+                factory.Code().createLiteral(fileName)
+        );
+    }
+
+    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, String fieldName, String fieldType) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
+        CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
+                registerUtilsType,
+                voidType,
+                "addAttribute"
+        );
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType)
         );
     }
 
-    /*private void writeCountToFile(String constructorSignature, int count) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(LOG_COUNT_FILE_PATH, true))) {
-            log.info("Writing {} to CSV file", constructorSignature);
-            File csvFile = new File(LOG_COUNT_FILE_PATH);
-            if (csvFile.length() == 0) {
-                writer.write("Constructor,Assignment Count");
-                writer.newLine();
-            }
-            writer.write(String.format("\"%s\",%d", constructorSignature, count));
-            writer.newLine();
-        } catch (IOException e) {
-            log.error("Failed to write counts to CSV: {}", e.getMessage());
-        }
-    }*/
+    private CtInvocation<?> createSendMethodInvocation(Factory factory) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> sendMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "send"
+        );
+
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                sendMethod
+        );
+    }
 }
