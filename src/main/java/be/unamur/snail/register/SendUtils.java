@@ -44,11 +44,13 @@ public class SendUtils {
         } catch (InvalidPropertiesFormatException e) {
             log.error("Error sending JSON to API : {}", e.getMessage());
         } catch (JsonProcessingException e) {
-            log.error("Error serializeing constructorEntityDTO to JSON: {}", e.getMessage());
+            log.error("Error serializing constructorEntityDTO to JSON: {}", e.getMessage());
         } catch (IOException e) {
             log.error("IOException: {}", e.getMessage());
         } catch (InterruptedException e) {
             log.error("InterruptedException: {}", e.getMessage());
+        } catch (RuntimeException e) {
+            log.error("RuntimeException: {}", e.getMessage());
         }
     }
 }

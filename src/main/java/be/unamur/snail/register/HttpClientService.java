@@ -25,7 +25,9 @@ public class HttpClientService {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
-            } else {
+            } /*else if (response.statusCode() == 400) {
+                System.out.println("Bad Request, entity already exists : " + response.body());
+            }*/ else {
                 System.out.println("Error: " + response.statusCode() + " " + response.body());
                 throw new RuntimeException("HTTP error: " + response.statusCode() + ", body: " + response.body());
             }

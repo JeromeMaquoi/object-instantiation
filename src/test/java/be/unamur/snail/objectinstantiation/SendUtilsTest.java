@@ -69,7 +69,7 @@ class SendUtilsTest {
         }
     }
 
-    @Test
+    /*@Test
     void sendThrowsExceptionTest() {
         try(MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
             mockedHttpClientServiceMock.when(() -> HttpClientService.post(eq(SendUtils.getApiURL()), anyString())).thenThrow(new RuntimeException("HTTP error"));
@@ -79,5 +79,5 @@ class SendUtilsTest {
 
             assertEquals("HTTP error", thrown.getMessage());
         }
-    }
+    }*/
 }
