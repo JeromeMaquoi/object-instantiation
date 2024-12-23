@@ -34,7 +34,7 @@ cd ./target || return
 echo "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
 java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path"
 
-# Copy be.unamur.snail.register.SendUtils to the output folder
+# Copy be.unamur.snail.register.RegisterUtils to the output folder
 register_path="/home/jerome/Documents/Assistant/Recherche/joular-scripts/object-instantiation/src/main/java/be/unamur/snail/register/."
 echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
 mkdir -p "${output_source_code}/be/unamur/snail/register"
