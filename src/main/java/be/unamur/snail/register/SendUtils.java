@@ -9,14 +9,18 @@ import java.io.IOException;
 import java.util.InvalidPropertiesFormatException;
 
 public class SendUtils {
-    private static final String API_URL = System.getenv("API_URL");
+    private static String apiUrl = System.getenv("API_URL");
     private static ConstructorEntityDTO constructorEntityDTO;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
 
     public static String getApiURL() {
-        return API_URL;
+        return apiUrl;
+    }
+
+    public static void setApiURL(String apiURL) {
+        apiUrl = apiURL;
     }
 
     public static ConstructorEntityDTO getConstructorEntityDTO() {
@@ -40,7 +44,7 @@ public class SendUtils {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(constructorEntityDTO);
-            HttpClientService.post(API_URL, json);
+            HttpClientService.post(apiUrl, json);
         } catch (InvalidPropertiesFormatException e) {
             log.error("Error sending JSON to API : {}", e.getMessage());
         } catch (JsonProcessingException e) {
