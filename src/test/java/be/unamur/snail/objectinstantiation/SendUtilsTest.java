@@ -17,7 +17,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
-    private static final String FAKE_API_URL = "http://test-send-utils-api-fake-url/";
+    private static final String apiURL = "http://localhost:8080/api/v1/constructor-entities";
 
     private String constructorSignature;
     private String constructorClassName;
@@ -28,8 +28,6 @@ class SendUtilsTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-
-        SendUtils.setApiURL(FAKE_API_URL);
 
         constructorSignature = "constructorSignature";
         constructorClassName = "constructorClassName";
@@ -63,11 +61,11 @@ class SendUtilsTest {
             SendUtils.addAttribute(attributeName, attributeType);
             String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
 
-            mockedHttpClientServiceMock.when(() -> HttpClientService.post(FAKE_API_URL, jsonPayload)).thenReturn("Success");
+            mockedHttpClientServiceMock.when(() -> HttpClientService.post(apiURL, jsonPayload)).thenReturn("Success");
 
             SendUtils.send();
 
-            mockedHttpClientServiceMock.verify(() -> HttpClientService.post(eq(FAKE_API_URL), anyString()), times(1));
+            mockedHttpClientServiceMock.verify(() -> HttpClientService.post(eq(apiURL), anyString()), times(1));
         }
     }
 
