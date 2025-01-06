@@ -1,21 +1,12 @@
 #!/bin/bash
 
-project_name="spring-boot"
-src_folder_path="/spring-boot-project/spring-boot/"
+export $(grep -v '^#' .env | xargs -d '\n')
 
-#project_name="spoon"
-#src_folder_path=""
+input_repo_path="${REPO_PATH}${PROJECT_NAME}"
+input_source_code="${input_repo_path}${SRC_FOLDER_PATH}/src/main/java/"
 
-#project_name="jabref"
-#src_folder_path=""
-
-repo_path="/home/jerome/Documents/Assistant/Recherche/joular-scripts/test-sentinel-copy/test/"
-
-input_repo_path="${repo_path}${project_name}"
-input_source_code="${input_repo_path}${src_folder_path}/src/main/java/"
-
-output_repo_path="${repo_path}${project_name}_output"
-output_source_code="${output_repo_path}${src_folder_path}/src/main/java/"
+output_repo_path="${REPO_PATH}${PROJECT_NAME}_output"
+output_source_code="${output_repo_path}${SRC_FOLDER_PATH}/src/main/java/"
 
 # Remove old output folder
 echo "Removing ${output_repo_path}..."
