@@ -37,7 +37,7 @@ class SendUtilsTest {
         constructorFileName = "constructorFileName";
         attributeName = "attributeName";
         attributeType = "attributeType";
-        attributeActualType = "actualType";
+        attributeActualType = "java.lang.String";
 
         SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
     }
