@@ -34,9 +34,10 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
-    public static void addAttribute(String attributeName, String attributeType) {
+    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
         assert !constructorEntityDTO.isEmpty();
-        AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType);
+        String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
+        AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType, actualType);
         constructorEntityDTO.addAttributeEntity(attributePayload);
     }
 

@@ -24,6 +24,7 @@ class SendUtilsTest {
     private String constructorFileName;
     private String attributeName;
     private String attributeType;
+    private String attributeActualType;
 
     @BeforeEach
     void setUp() {
@@ -36,13 +37,14 @@ class SendUtilsTest {
         constructorFileName = "constructorFileName";
         attributeName = "attributeName";
         attributeType = "attributeType";
+        attributeActualType = "java.lang.String";
 
         SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
     }
 
     @Test
     void addAttributeWorkingTest() {
-        SendUtils.addAttribute(attributeName, attributeType);
+        SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
         ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
         assertNotNull(constructorEntityDTO);
         assertEquals(constructorSignature, constructorEntityDTO.getSignature());
@@ -55,12 +57,13 @@ class SendUtilsTest {
         assertEquals(1, attributeEntities.size());
         assertEquals(attributeName, attributeEntities.get(0).getName());
         assertEquals(attributeType, attributeEntities.get(0).getType());
+        assertEquals(attributeActualType, attributeEntities.get(0).getActualType());
     }
 
     @Test
     void sendWorkingTest() {
         try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            SendUtils.addAttribute(attributeName, attributeType);
+            SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
             String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
 
             mockedHttpClientServiceMock.when(() -> HttpClientService.post(FAKE_API_URL, jsonPayload)).thenReturn("Success");
