@@ -57,6 +57,7 @@ class SendUtilsTest {
         assertEquals(1, attributeEntities.size());
         assertEquals(attributeName, attributeEntities.get(0).getName());
         assertEquals(attributeType, attributeEntities.get(0).getType());
+        assertEquals(attributeActualType, attributeEntities.get(0).getActualType());
     }
 
     @Test
