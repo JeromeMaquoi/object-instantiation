@@ -35,7 +35,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, fieldName, fieldType);
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, fieldName, fieldType, fieldAccess);
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
@@ -63,7 +63,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, String fieldName, String fieldType) {
+    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
@@ -75,7 +75,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 factory.Code().createTypeAccess(registerUtilsType),
                 addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
-                factory.Code().createLiteral(fieldType)
+                factory.Code().createLiteral(fieldType),
+                fieldAccess
         );
     }
 
