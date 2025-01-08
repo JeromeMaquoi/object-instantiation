@@ -27,6 +27,9 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
 
+        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
+        constructor.getBody().insertBegin(setCallerContextInvocation);
+
         CtInvocation<?> initConstructorInvocation = createInitConstructorEntityDTOInvocation(factory, constructorSignature, className, fileName);
         constructor.getBody().insertBegin(initConstructorInvocation);
 
@@ -45,6 +48,23 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
     private String getSimpleConstructorSignature(CtConstructor<?> constructor) {
         return constructor.getDeclaringType().getSimpleName() + "(" + constructor.getParameters().stream().map(param -> param.getType().getQualifiedName()).collect(Collectors.joining(", ")) + ")";
+    }
+
+    private CtInvocation<?> createSetCallerContextInvocation(Factory factory, CtConstructor<?> constructor) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> setCallerContextMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "setCallerContext"
+        );
+
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                setCallerContextMethod,
+                factory.Code().createLiteral(constructor.getDeclaringType().getSimpleName())/*,
+                factory.Code().createLiteral(constructor.getSimpleName()),
+                factory.Code().createLiteral(constructor.getPosition().getLine())*/
+        );
     }
 
     private CtInvocation<?> createInitConstructorEntityDTOInvocation(Factory factory, String constructorSignature, String className, String fileName) {
