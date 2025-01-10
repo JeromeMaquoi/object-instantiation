@@ -6,10 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.InvalidPropertiesFormatException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class SendUtils {
     private static String apiUrl = System.getenv("API_URL");
@@ -38,9 +39,10 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
-    public static void setCallerContext(String constructorName) {
+    public static void setCallerContext(String constructorName, Object obj) {
         List<StackTraceElement> projectStackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
                 .filter(element -> element.getClassName().startsWith(PROJECT_PACKAGE_PREFIX))
+                .filter(element -> !element.getClassName().contains(constructorName))
                 .toList();
 
         System.out.println("Stack trace for constructor: " + constructorName);
@@ -51,6 +53,33 @@ public class SendUtils {
                     element.getFileName(),
                     element.getLineNumber());
         }
+
+        if (obj == null) {
+            log.warn("Object is null.");
+            return;
+        }
+
+        Class<?> clazz = obj.getClass();
+        System.out.println("Capturing attribute values for class: " + clazz.getName());
+
+        Field[] fields = clazz.getDeclaredFields();
+        for (Field field : fields) {
+            if (Modifier.isStatic(field.getModifiers())) {
+                continue;
+            }
+            field.setAccessible(true); // Access private fields
+            try {
+                Object value = field.get(obj);
+                System.out.printf("    %s (%s) = %s%n",
+                        field.getName(),
+                        field.getType().getName(),
+                        value != null ? value.toString() : "null"
+                );
+            } catch (IllegalAccessException e) {
+                System.out.printf("    Unable to access field: %s%n", field.getName());
+            }
+        }
+        System.out.println("\n\n");
     }
 
     public static void addAttribute(String attributeName, String attributeType, Object actualObject) {

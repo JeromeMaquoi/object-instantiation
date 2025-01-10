@@ -8,6 +8,7 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
@@ -27,9 +28,6 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             fileName = constructor.getPosition().getFile().getPath();
         }
 
-        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
-        constructor.getBody().insertBegin(setCallerContextInvocation);
-
         CtInvocation<?> initConstructorInvocation = createInitConstructorEntityDTOInvocation(factory, constructorSignature, className, fileName);
         constructor.getBody().insertBegin(initConstructorInvocation);
 
@@ -42,6 +40,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
+
+        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
+        constructor.getBody().insertEnd(setCallerContextInvocation);
+
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
         constructor.getBody().addStatement(sendInvocation);
     }
@@ -58,12 +60,13 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 "setCallerContext"
         );
 
+        CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
+
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
                 setCallerContextMethod,
-                factory.Code().createLiteral(constructor.getDeclaringType().getSimpleName())/*,
-                factory.Code().createLiteral(constructor.getSimpleName()),
-                factory.Code().createLiteral(constructor.getPosition().getLine())*/
+                factory.Code().createLiteral(constructor.getDeclaringType().getSimpleName()),
+                thisAccess
         );
     }
 
