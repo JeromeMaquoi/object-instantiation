@@ -16,6 +16,7 @@ public class SendUtils {
     private static String apiUrl = System.getenv("API_URL");
     private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
     private static ConstructorEntityDTO constructorEntityDTO;
+    private static MethodElementDTO methodElementDTO;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
@@ -39,6 +40,14 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
+    public static void initMethodElementDTO(String fileName, String className, String methodName) {
+        methodElementDTO = new MethodElementDTO().withFileName(fileName).withClassName(className).withMethodName(methodName);
+    }
+
+    /*private static StackTraceElementDTO createStackTraceElementDTO(StackTraceElement element) {
+
+    }*/
+
     public static void setCallerContext(String constructorName, Object obj) {
         List<StackTraceElement> projectStackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
                 .filter(element -> element.getClassName().startsWith(PROJECT_PACKAGE_PREFIX))
@@ -46,12 +55,10 @@ public class SendUtils {
                 .toList();
 
         System.out.println("Stack trace for constructor: " + constructorName);
+        StackTraceDTO stackTraceDTO = new StackTraceDTO();
         for (StackTraceElement element : projectStackTrace) {
-            System.out.printf("    at %s.%s(%s:%d)%n",
-                    element.getClassName(),
-                    element.getMethodName(),
-                    element.getFileName(),
-                    element.getLineNumber());
+            //stackTraceDTO.addStackTraceElement(new StackTraceElementDTO().withMethod());
+            System.out.println(element.toString());
         }
 
         if (obj == null) {
@@ -83,10 +90,12 @@ public class SendUtils {
     }
 
     public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
-        assert !constructorEntityDTO.isEmpty();
+//        assert !constructorEntityDTO.isEmpty();
+        assert !methodElementDTO.isInitialized();
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
         AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType, actualType);
-        constructorEntityDTO.addAttributeEntity(attributePayload);
+//        constructorEntityDTO.addAttributeEntity(attributePayload);
+        methodElementDTO.addAttribute(attributePayload);
     }
 
     public static void send() {
