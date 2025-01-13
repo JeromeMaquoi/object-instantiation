@@ -1,10 +1,11 @@
 package be.unamur.snail.register;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class StackTraceDTO {
-    private List<StackTraceElementDTO> stackTraceElements;
+    private List<StackTraceElementDTO> stackTraceElements = new ArrayList<>();
     private List<Float> consumptionValues;
 
     public List<StackTraceElementDTO> getStackTraceElements() {
