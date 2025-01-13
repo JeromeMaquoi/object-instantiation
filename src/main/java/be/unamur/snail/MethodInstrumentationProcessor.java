@@ -1,10 +1,7 @@
 package be.unamur.snail;
 
 import spoon.processing.AbstractProcessor;
-import spoon.reflect.code.CtAssignment;
-import spoon.reflect.code.CtFieldAccess;
-import spoon.reflect.code.CtInvocation;
-import spoon.reflect.code.CtThisAccess;
+import spoon.reflect.code.*;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtExecutable;
 import spoon.reflect.declaration.CtMethod;
@@ -12,6 +9,8 @@ import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
+
+import java.util.List;
 
 public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutable<?>> {
     private static final String PKG = "be.unamur.snail.register.SendUtils";
@@ -55,7 +54,7 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutab
             }
         }
 
-        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, (CtMethod<?>) constructor);
+        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
         constructor.getBody().insertEnd(setCallerContextInvocation);
 
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
@@ -71,7 +70,7 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutab
         method.getBody().insertBegin(initMethodInvocation);
 
         CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, method);
-        method.getBody().insertEnd(setCallerContextInvocation);
+        insertSetCallerContextInvocation(method, setCallerContextInvocation);
 
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
         method.getBody().addStatement(sendInvocation);
@@ -87,9 +86,9 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutab
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
                 initConstructorMethod,
-                factory.Code().createLiteral(methodName),
+                factory.Code().createLiteral(fileName),
                 factory.Code().createLiteral(className),
-                factory.Code().createLiteral(fileName)
+                factory.Code().createLiteral(methodName)
         );
     }
 
@@ -110,7 +109,7 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutab
         );
     }
 
-    private CtInvocation<?> createSetCallerContextInvocation(Factory factory, CtMethod<?> method) {
+    private CtInvocation<?> createSetCallerContextInvocation(Factory factory, CtExecutable<?> method) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> setCallerContextMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -118,14 +117,37 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtExecutab
                 "setCallerContext"
         );
 
-        CtThisAccess<?> thisAccess = factory.Code().createThisAccess(method.getDeclaringType().getReference());
+        CtTypeReference<?> declaringType = getDeclaringType(method);
+        CtThisAccess<?> thisAccess = factory.Code().createThisAccess(declaringType);
 
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
                 setCallerContextMethod,
-                factory.Code().createLiteral(method.getDeclaringType().getSimpleName()),
+                factory.Code().createLiteral(declaringType.getSimpleName()),
                 thisAccess
         );
+    }
+
+    private void insertSetCallerContextInvocation(CtMethod<?> method, CtInvocation<?> setCallerContextInvocation) {
+        List<CtReturn<?>> returnStatements = method.getBody().getElements(new TypeFilter<>(CtReturn.class));
+        for (CtReturn<?> returnStatement : returnStatements) {
+            returnStatement.insertBefore(setCallerContextInvocation);
+        }
+        if (returnStatements.isEmpty()) {
+            method.getBody().insertEnd(setCallerContextInvocation);
+        }
+    }
+
+    private CtTypeReference<?> getDeclaringType(CtExecutable<?> executable) {
+        CtTypeReference<?> declaringType;
+        if (executable instanceof CtConstructor<?>) {
+            declaringType = ((CtConstructor<?>) executable).getDeclaringType().getReference();
+        } else if (executable instanceof CtMethod<?>) {
+            declaringType = ((CtMethod<?>) executable).getDeclaringType().getReference();
+        } else {
+            throw new IllegalArgumentException("Unsupported executable type: " + executable.getClass());
+        }
+        return declaringType;
     }
 
     private CtInvocation<?> createSendMethodInvocation(Factory factory) {
