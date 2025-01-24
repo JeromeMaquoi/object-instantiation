@@ -6,7 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -44,16 +46,7 @@ public class SendUtils {
                 .toList());
         Collections.reverse(projectStackTrace);
 
-        StackTraceDTO stackTraceDTO = new StackTraceDTO();
-        System.out.println("Stack trace for constructor: " + constructorName);
-        for (StackTraceElement element : projectStackTrace) {
-            System.out.printf("    at %s.%s(%s:%d)%n",
-                    element.getClassName(),
-                    element.getMethodName(),
-                    element.getFileName(),
-                    element.getLineNumber());
-            stackTraceDTO.addStackTraceElement(createStackTraceElement(element));
-        }
+        StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
         System.out.println("\n");
         System.out.println(stackTraceDTO);
         System.out.println("\n");
@@ -63,14 +56,41 @@ public class SendUtils {
         System.out.println("\n\n");
     }
 
+    private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
+        StackTraceDTO stackTraceDTO = new StackTraceDTO();
+//        System.out.println("Stack trace for constructor: " + constructorName);
+        for (StackTraceElement element : projectStackTrace) {
+            System.out.printf("    at %s.%s(%s:%d)%n",
+                    element.getClassName(),
+                    element.getMethodName(),
+                    element.getFileName(),
+                    element.getLineNumber());
+            stackTraceDTO.addStackTraceElement(createStackTraceElement(element));
+        }
+        return stackTraceDTO;
+    }
+
     private static StackTraceElementDTO createStackTraceElement(StackTraceElement stackTraceElement) {
         MethodElementDTO methodElementDTO = createMethodElementDTO(stackTraceElement);
         return new StackTraceElementDTO().withMethod(methodElementDTO).withLineNumber(stackTraceElement.getLineNumber());
     }
 
     private static MethodElementDTO createMethodElementDTO(StackTraceElement element) {
-        return new MethodElementDTO().withFileName(element.getFileName()).withClassName(element.getClassName()).withMethodName(element.getMethodName());
+        return new MethodElementDTO().withFileName(element.getFileName()).withClassName(element.getClassName()).withMethodName(getMethodName(element)).isConstructor(isConstructor(element));
     }
+
+    private static String getMethodName(StackTraceElement element) {
+        if (element.getMethodName().equals("<init>")) {
+            String fullClassName = element.getClassName();
+            return fullClassName.substring(fullClassName.lastIndexOf(".") + 1);
+        }
+        return element.getMethodName();
+    }
+
+    private static boolean isConstructor(StackTraceElement element) {
+        return element.getMethodName().equals("<init>");
+    }
+    
 
     private static void printFields(Object obj, int depth) {
         if (obj == null) {
