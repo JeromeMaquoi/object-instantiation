@@ -38,10 +38,11 @@ public class SendUtils {
     }
 
     public static void setCallerContext(String constructorName, Object obj) {
-        List<StackTraceElement> projectStackTrace = Arrays.stream(Thread.currentThread().getStackTrace())
+        List<StackTraceElement> projectStackTrace = new ArrayList<>(Arrays.stream(Thread.currentThread().getStackTrace())
                 .filter(element -> element.getClassName().startsWith(PROJECT_PACKAGE_PREFIX))
 //                .filter(element -> !element.getClassName().contains(constructorName))
-                .toList();
+                .toList());
+        Collections.reverse(projectStackTrace);
 
         StackTraceDTO stackTraceDTO = new StackTraceDTO();
         System.out.println("Stack trace for constructor: " + constructorName);
