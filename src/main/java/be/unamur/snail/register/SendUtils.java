@@ -6,9 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -39,38 +37,74 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
-    public static void setCallerContext(String constructorName, Object obj) {
+    private static List<StackTraceElement> getStackTrace() {
         List<StackTraceElement> projectStackTrace = new ArrayList<>(Arrays.stream(Thread.currentThread().getStackTrace())
                 .filter(element -> element.getClassName().startsWith(PROJECT_PACKAGE_PREFIX))
 //                .filter(element -> !element.getClassName().contains(constructorName))
                 .toList());
         Collections.reverse(projectStackTrace);
-
-        StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
-        System.out.println("\n");
-        System.out.println(stackTraceDTO);
-        System.out.println("\n");
-
-        printFields(obj, 0);
-
-        System.out.println("\n\n");
+        return projectStackTrace;
     }
 
-    private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
-        StackTraceDTO stackTraceDTO = new StackTraceDTO();
-//        System.out.println("Stack trace for constructor: " + constructorName);
+    public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
+        StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = createStackTraceSnapShotElementDTO();
+        System.out.println("\n");
+        System.out.println(stackTraceSnapshotElementDTO);
+        System.out.println("\n");
+    }
+
+    private static StackTraceSnapshotElementDTO createStackTraceSnapShotElementDTO() {
+        List<StackTraceElement> projectStackTrace = getStackTrace();
+
+        StackTraceElement parent = projectStackTrace.get(projectStackTrace.size()-2);
+        StackTraceElement currentElement = projectStackTrace.get(projectStackTrace.size()-1);
+        int lineNumber = currentElement.getLineNumber();
+        MethodElementDTO currentMethodElement = createMethodElementDTO(currentElement);
+
+        StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = new StackTraceSnapshotElementDTO();
         for (StackTraceElement element : projectStackTrace) {
             System.out.printf("    at %s.%s(%s:%d)%n",
                     element.getClassName(),
                     element.getMethodName(),
                     element.getFileName(),
                     element.getLineNumber());
-            stackTraceDTO.addStackTraceElement(createStackTraceElement(element));
+            stackTraceSnapshotElementDTO.addAncestorStackTraceElementDTO(createStackTraceElementDTO(element));
+        }
+        stackTraceSnapshotElementDTO.setParent(createStackTraceElementDTO(parent));
+        stackTraceSnapshotElementDTO.setLineNumber(lineNumber);
+        stackTraceSnapshotElementDTO.setMethod(currentMethodElement);
+
+        return stackTraceSnapshotElementDTO;
+    }
+
+    public static void setCallerContext(String constructorName, Object obj) {
+        List<StackTraceElement> projectStackTrace = getStackTrace();
+
+        StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
+//        System.out.println("\n");
+//        System.out.println(stackTraceDTO);
+//        System.out.println("\n");
+
+        printFields(obj, 0);
+
+//        System.out.println("\n\n");
+    }
+
+    private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
+        StackTraceDTO stackTraceDTO = new StackTraceDTO();
+//        System.out.println("Stack trace for constructor: " + constructorName);
+        for (StackTraceElement element : projectStackTrace) {
+            /*System.out.printf("    at %s.%s(%s:%d)%n",
+                    element.getClassName(),
+                    element.getMethodName(),
+                    element.getFileName(),
+                    element.getLineNumber());*/
+            stackTraceDTO.addStackTraceElement(createStackTraceElementDTO(element));
         }
         return stackTraceDTO;
     }
 
-    private static StackTraceElementDTO createStackTraceElement(StackTraceElement stackTraceElement) {
+    private static StackTraceElementDTO createStackTraceElementDTO(StackTraceElement stackTraceElement) {
         MethodElementDTO methodElementDTO = createMethodElementDTO(stackTraceElement);
         return new StackTraceElementDTO().withMethod(methodElementDTO).withLineNumber(stackTraceElement.getLineNumber());
     }
