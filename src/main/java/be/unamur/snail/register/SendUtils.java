@@ -47,20 +47,21 @@ public class SendUtils {
     }
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
-        StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = createStackTraceSnapShotElementDTO();
+        StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = createStackTraceSnapShotElementDTO(fileName, className, methodName, parameters);
         System.out.println("\n");
         System.out.println(stackTraceSnapshotElementDTO);
-        System.out.println("\n");
+        System.out.println("\n\n\n");
     }
 
-    private static StackTraceSnapshotElementDTO createStackTraceSnapShotElementDTO() {
+    private static StackTraceSnapshotElementDTO createStackTraceSnapShotElementDTO(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> projectStackTrace = getStackTrace();
 
         StackTraceElement parent = projectStackTrace.get(projectStackTrace.size()-2);
         StackTraceElement currentElement = projectStackTrace.get(projectStackTrace.size()-1);
         int lineNumber = currentElement.getLineNumber();
-        MethodElementDTO currentMethodElement = createMethodElementDTO(currentElement);
+        MethodElementDTO currentMethodElement = new MethodElementDTO().withFileName(fileName).withClassName(className).withMethodName(methodName).isConstructor(isConstructor(currentElement)).withParameters(parameters);
 
+        projectStackTrace.remove(projectStackTrace.size()-1);
         StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = new StackTraceSnapshotElementDTO();
         for (StackTraceElement element : projectStackTrace) {
             System.out.printf("    at %s.%s(%s:%d)%n",

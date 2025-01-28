@@ -8,6 +8,7 @@ public class StackTraceSnapshotElementDTO {
     private StackTraceElementDTO parent;
     private int lineNumber;
     private MethodElementDTO method;
+    private String snapshot; // TODO
 
     public List<StackTraceElementDTO> getAncestorsStackTraceElements() {
         return ancestorsStackTraceElements;
@@ -47,11 +48,22 @@ public class StackTraceSnapshotElementDTO {
 
     @Override
     public String toString() {
-        return "StackTraceSnapshotElementDTO{" +
-                "ancestorsStackTraceElements=" + ancestorsStackTraceElements +
-                ", parent=" + parent +
-                ", lineNumber=" + lineNumber +
-                ", method=" + method +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        builder.append("StackTraceSnapshotElementDTO{\n  ancestorsStackTraceElements=\n");
+        for (StackTraceElementDTO stackTraceElement : ancestorsStackTraceElements) {
+            builder.append("      ").append(stackTraceElement).append("\n");
+        }
+        builder.append("\n  parent=").append(parent).append("\n");
+        builder.append("\n  lineNumber=").append(lineNumber).append("\n");
+        builder.append("\n  method=").append(method).append("\n");
+        builder.append("\n  snapshot=").append(snapshot).append("\n");
+        builder.append("}");
+        return builder.toString();
+        /*return "StackTraceSnapshotElementDTO{\n" +
+                "  ancestorsStackTraceElements=" + ancestorsStackTraceElements +
+                ",\n  parent=" + parent +
+                ",\n  lineNumber=" + lineNumber +
+                ",\n  method=" + method +
+                '}';*/
     }
 }
