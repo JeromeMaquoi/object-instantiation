@@ -13,6 +13,9 @@ import java.util.*;
 public class SendUtils {
     private static String apiUrl = System.getenv("API_URL");
     private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
+    private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
+    private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+
     private static ConstructorEntityDTO constructorEntityDTO;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
@@ -26,6 +29,14 @@ public class SendUtils {
         apiUrl = apiURL;
     }
 
+    public static void setProjectPackagePrefix(String projectPackagePrefix) {
+        PROJECT_PACKAGE_PREFIX = projectPackagePrefix;
+    }
+
+    public static void setWriter(MethodContextWriter customWriter) {
+        writer = customWriter;
+    }
+
     public static ConstructorEntityDTO getConstructorEntityDTO() {
         return constructorEntityDTO;
     }
@@ -37,23 +48,17 @@ public class SendUtils {
         constructorEntityDTO.setFileName(fileName);
     }
 
-    private static List<StackTraceElement> getStackTrace() {
-        List<StackTraceElement> projectStackTrace = new ArrayList<>(Arrays.stream(Thread.currentThread().getStackTrace())
-                .filter(element -> element.getClassName().startsWith(PROJECT_PACKAGE_PREFIX))
-//                .filter(element -> !element.getClassName().contains(constructorName))
-                .toList());
-        Collections.reverse(projectStackTrace);
-        return projectStackTrace;
-    }
-
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
-        StackTraceSnapshotElementDTO stackTraceSnapshotElementDTO = createStackTraceSnapShotElementDTO(fileName, className, methodName, parameters);
-        System.out.println("\n");
-        System.out.println(stackTraceSnapshotElementDTO);
-        System.out.println("\n\n\n");
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
+        MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
+        try {
+            writer.write(context);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private static StackTraceSnapshotElementDTO createStackTraceSnapShotElementDTO(String fileName, String className, String methodName, List<String> parameters) {
+    /*private static StackTraceSnapshotElementDTO createStackTraceSnapShotElementDTO(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> projectStackTrace = getStackTrace();
 
         StackTraceElement parent = projectStackTrace.get(projectStackTrace.size()-2);
@@ -76,9 +81,9 @@ public class SendUtils {
         stackTraceSnapshotElementDTO.setMethod(currentMethodElement);
 
         return stackTraceSnapshotElementDTO;
-    }
+    }*/
 
-    public static void setCallerContext(String constructorName, Object obj) {
+    /*public static void setCallerContext(String constructorName, Object obj) {
         List<StackTraceElement> projectStackTrace = getStackTrace();
 
         StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
@@ -89,7 +94,7 @@ public class SendUtils {
         printFields(obj, 0);
 
 //        System.out.println("\n\n");
-    }
+    }*/
 
     private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
         StackTraceDTO stackTraceDTO = new StackTraceDTO();

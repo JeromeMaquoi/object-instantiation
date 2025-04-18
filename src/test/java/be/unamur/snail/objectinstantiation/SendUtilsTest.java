@@ -18,6 +18,7 @@ import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
     private static final String FAKE_API_URL = "http://test-send-utils-api-fake-url/";
+    private static final String PROJECT_PACKAGE_PREFIX = "org.springframework";
 
     private String constructorSignature;
     private String constructorClassName;
@@ -31,6 +32,7 @@ class SendUtilsTest {
         MockitoAnnotations.openMocks(this);
 
         SendUtils.setApiURL(FAKE_API_URL);
+        SendUtils.setProjectPackagePrefix(PROJECT_PACKAGE_PREFIX);
 
         constructorSignature = "constructorSignature";
         constructorClassName = "constructorClassName";

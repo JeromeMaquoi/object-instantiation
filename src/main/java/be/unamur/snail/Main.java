@@ -26,6 +26,7 @@ public class Main {
         launcher.setSourceOutputDirectory(outputPath);
 
         List<String> classpaths = Files.readAllLines(Paths.get(inputRepoPath + "/classpath.txt"));
+        System.out.println("classpaths: " + classpaths);
         launcher.getEnvironment().setSourceClasspath(classpaths.toArray(new String[0]));
 
         launcher.addProcessor(new ConstructorInstrumentationProcessor());
