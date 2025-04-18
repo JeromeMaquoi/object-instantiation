@@ -21,7 +21,7 @@ class MethodContextTest {
 
         MethodContext methodContext = new MethodContext(fileName, className, methodName, parameters, stackTrace);
 
-        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30) | org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
+        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30);org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
         String expectedRow = String.format("%s,%s,%s,%s,%s", fileName, className, methodName, "String;int",expectedTrace);
 
         assertEquals(expectedRow, methodContext.toCsvRow());
@@ -40,7 +40,7 @@ class MethodContextTest {
 
         MethodContext methodContext = new MethodContext(fileName, className, methodName, parameters, stackTrace);
 
-        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30) | org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
+        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30);org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
         String expectedRow = String.format("%s,%s,%s,%s,%s", fileName, className, methodName, "",expectedTrace);
 
         assertEquals(expectedRow, methodContext.toCsvRow());

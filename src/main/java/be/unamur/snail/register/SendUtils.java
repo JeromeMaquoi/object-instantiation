@@ -5,14 +5,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
     private static String apiUrl = System.getenv("API_URL");
     private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
+    private static String CSV_HEADER = "file-name, class-name, method-name, parameters, stacktrace\n";
     private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
     private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
@@ -52,9 +56,17 @@ public class SendUtils {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
         try {
+            ensureHeaderWritten();
             writer.write(context);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private static void ensureHeaderWritten() throws IOException {
+        File csvFile = new File(System.getenv("CSV_FILE_PATH"));
+        if (!csvFile.exists()) {
+            Files.write(Paths.get(csvFile.toURI()), CSV_HEADER.getBytes());
         }
     }
 
@@ -83,8 +95,8 @@ public class SendUtils {
         return stackTraceSnapshotElementDTO;
     }*/
 
-    /*public static void setCallerContext(String constructorName, Object obj) {
-        List<StackTraceElement> projectStackTrace = getStackTrace();
+    public static void setCallerContext(String constructorName, Object obj) {
+        /*List<StackTraceElement> projectStackTrace = getStackTrace();
 
         StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
 //        System.out.println("\n");
@@ -93,8 +105,8 @@ public class SendUtils {
 
         printFields(obj, 0);
 
-//        System.out.println("\n\n");
-    }*/
+//        System.out.println("\n\n");*/
+    }
 
     private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
         StackTraceDTO stackTraceDTO = new StackTraceDTO();

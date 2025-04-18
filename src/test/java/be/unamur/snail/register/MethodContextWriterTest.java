@@ -43,7 +43,7 @@ class MethodContextWriterTest {
         writer.write(context);
 
         List<String> lines = Files.readAllLines(tempFile);
-        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30) | org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
+        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30);org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
         String expectedLine = String.format("%s,%s,%s,%s,%s","file","class","method","String;String",expectedTrace);
         assertEquals(1, lines.size());
         assertEquals(expectedLine, lines.get(0));

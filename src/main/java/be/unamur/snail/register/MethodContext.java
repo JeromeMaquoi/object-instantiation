@@ -21,7 +21,7 @@ public class MethodContext {
         String paramStr = String.join(";", parameters);
         String traceStr = stackTrace.stream()
                 .map(StackTraceElement::toString)
-                .reduce((a, b) -> a + " | " + b)
+                .reduce((a, b) -> a + ";" + b)
                 .orElse("");
         return String.format("%s,%s,%s,%s,%s", fileName, className, methodName, paramStr, traceStr);
     }
