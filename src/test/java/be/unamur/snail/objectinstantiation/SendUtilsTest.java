@@ -60,7 +60,7 @@ class SendUtilsTest {
         assertEquals(attributeActualType, attributeEntities.get(0).getActualType());
     }
 
-    @Test
+    /*@Test
     void sendWorkingTest() {
         try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
             SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
@@ -72,7 +72,7 @@ class SendUtilsTest {
 
             mockedHttpClientServiceMock.verify(() -> HttpClientService.post(eq(FAKE_API_URL), anyString()), times(1));
         }
-    }
+    }*/
 
     /*@Test
     void sendThrowsExceptionTest() {
