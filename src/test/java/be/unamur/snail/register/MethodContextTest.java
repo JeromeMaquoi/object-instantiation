@@ -8,6 +8,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class MethodContextTest {
+    private String getMethodName(String methodName, int nbParams, String params) {
+        return "\"" + methodName + "/" + nbParams + "[" + params + "]" + "\"";
+    }
+
     @Test
     void toCsvRowWithParametersTest() {
         String fileName = "ApplicationEnvironment.java";
@@ -21,8 +25,9 @@ class MethodContextTest {
 
         MethodContext methodContext = new MethodContext(fileName, className, methodName, parameters, stackTrace);
 
-        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30);org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
-        String expectedRow = String.format("%s,%s,%s,%s,%s", fileName, className, methodName, "String;int",expectedTrace);
+        String expectedTrace = "\"org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30),org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)\"";
+        String expectedMethodName = getMethodName(methodName, 2, "String,int");
+        String expectedRow = String.format("%s,%s,%s,%s", fileName, className, expectedMethodName,expectedTrace);
 
         assertEquals(expectedRow, methodContext.toCsvRow());
     }
@@ -40,8 +45,9 @@ class MethodContextTest {
 
         MethodContext methodContext = new MethodContext(fileName, className, methodName, parameters, stackTrace);
 
-        String expectedTrace = "org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30);org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)";
-        String expectedRow = String.format("%s,%s,%s,%s,%s", fileName, className, methodName, "",expectedTrace);
+        String expectedTrace = "\"org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30),org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)\"";
+        String expectedMethodName = "\"" + methodName + "/" + 0 + "\"";
+        String expectedRow = String.format("%s,%s,%s,%s", fileName, className, expectedMethodName,expectedTrace);
 
         assertEquals(expectedRow, methodContext.toCsvRow());
     }

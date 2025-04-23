@@ -18,11 +18,22 @@ public class MethodContext {
     }
 
     public String toCsvRow() {
-        String paramStr = String.join(";", parameters);
+        String methodWithParameters = createMethodWithParameters();
+        String traceStr = createStackTrace();
+        return String.format("%s,%s,%s,%s", fileName, className, methodWithParameters, traceStr);
+    }
+
+    public String createMethodWithParameters() {
+        String paramStr = String.join(",", parameters);
+        if (!parameters.isEmpty())  return "\"" + methodName + "/" + parameters.size() + "[" + paramStr + "]" + "\"";
+        else return "\""+ methodName + "/" + 0 + "\"";
+    }
+
+    public String createStackTrace() {
         String traceStr = stackTrace.stream()
                 .map(StackTraceElement::toString)
-                .reduce((a, b) -> a + ";" + b)
+                .reduce((a, b) -> a + "," + b)
                 .orElse("");
-        return String.format("%s,%s,%s,%s,%s", fileName, className, methodName, paramStr, traceStr);
+        return "\"" + traceStr + "\"";
     }
 }

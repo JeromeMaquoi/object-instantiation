@@ -16,7 +16,7 @@ import java.util.*;
 public class SendUtils {
     private static String apiUrl = System.getenv("API_URL");
     private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
-    private static String CSV_HEADER = "file-name, class-name, method-name, parameters, stacktrace\n";
+    private static String CSV_HEADER = "file,class,method,stacktrace\n";
     private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
     private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
