@@ -57,7 +57,7 @@ public class SendUtils {
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
         try {
             ensureHeaderWritten();
-            writer.write(context);
+            writer.writeIfNotExists(context);
         } catch (IOException e) {
             e.printStackTrace();
         }

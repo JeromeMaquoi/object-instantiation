@@ -28,7 +28,7 @@ class MethodContextWriterTest {
     }
 
     @Test
-    void writeMethodContextTest() throws IOException {
+    void writeIfNotExistsMethodContextTest() throws IOException {
         MethodContext context = new MethodContext(
                 "file",
                 "class",
@@ -40,7 +40,7 @@ class MethodContextWriterTest {
                 )
         );
 
-        writer.write(context);
+        writer.writeIfNotExists(context);
 
         List<String> lines = Files.readAllLines(tempFile);
         String expectedTrace = "\"org.springframework.boot.ApplicationEnvironmentTests.createEnvironment(ApplicationEnvironmentTests.java:30),org.springframework.boot.ApplicationEnvironment.createPropertyResolver(ApplicationEnvironment.java:43)\"";

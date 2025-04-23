@@ -17,6 +17,14 @@ public class MethodContext {
         this.stackTrace = stackTrace;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
     public String toCsvRow() {
         String methodWithParameters = createMethodWithParameters();
         String traceStr = createStackTrace();
