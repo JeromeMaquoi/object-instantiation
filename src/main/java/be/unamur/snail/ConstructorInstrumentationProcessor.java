@@ -8,6 +8,7 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtConstructor<?>> {
@@ -39,12 +40,34 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
+
+        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
+        constructor.getBody().insertEnd(setCallerContextInvocation);
+
         CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
         constructor.getBody().addStatement(sendInvocation);
     }
 
     private String getSimpleConstructorSignature(CtConstructor<?> constructor) {
         return constructor.getDeclaringType().getSimpleName() + "(" + constructor.getParameters().stream().map(param -> param.getType().getQualifiedName()).collect(Collectors.joining(", ")) + ")";
+    }
+
+    private CtInvocation<?> createSetCallerContextInvocation(Factory factory, CtConstructor<?> constructor) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> setCallerContextMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "setCallerContext"
+        );
+
+        CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
+
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                setCallerContextMethod,
+                factory.Code().createLiteral(constructor.getDeclaringType().getSimpleName()),
+                thisAccess
+        );
     }
 
     private CtInvocation<?> createInitConstructorEntityDTOInvocation(Factory factory, String constructorSignature, String className, String fileName) {
