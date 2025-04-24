@@ -1,11 +1,11 @@
 package be.unamur.snail.register;
 
-public class AttributeEntityDTO {
+public class AttributeContext {
     private String name;
     private String type;
     private String actualType;
 
-    public AttributeEntityDTO(String name, String type, String actualType) {
+    public AttributeContext(String name, String type, String actualType) {
         this.name = name;
         this.type = type;
         this.actualType = actualType;

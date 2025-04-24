@@ -1,21 +1,5 @@
 package be.unamur.snail.objectinstantiation;
 
-import be.unamur.snail.register.AttributeEntityDTO;
-import be.unamur.snail.register.ConstructorEntityDTO;
-import be.unamur.snail.register.HttpClientService;
-import be.unamur.snail.register.SendUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
-
 class SendUtilsTest {
     private static final String FAKE_API_URL = "http://test-send-utils-api-fake-url/";
     private static final String PROJECT_PACKAGE_PREFIX = "org.springframework";
@@ -27,7 +11,7 @@ class SendUtilsTest {
     private String attributeType;
     private String attributeActualType;
 
-    @BeforeEach
+    /*@BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
@@ -42,7 +26,7 @@ class SendUtilsTest {
         attributeActualType = "java.lang.String";
 
         SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
-    }
+    }*/
 
     /*@Test
     void addAttributeWorkingTest() {

@@ -14,42 +14,25 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
-    private static String apiUrl = System.getenv("API_URL");
-    private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
     private static String CSV_HEADER = "file,class,method,stacktrace\n";
     private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
     private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
-    private static ConstructorEntityDTO constructorEntityDTO;
+    private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
 
-    public static String getApiURL() {
-        return apiUrl;
-    }
-
-    public static void setApiURL(String apiURL) {
-        apiUrl = apiURL;
-    }
-
-    public static void setProjectPackagePrefix(String projectPackagePrefix) {
-        PROJECT_PACKAGE_PREFIX = projectPackagePrefix;
-    }
-
-    public static void setWriter(MethodContextWriter customWriter) {
-        writer = customWriter;
-    }
-
-    public static ConstructorEntityDTO getConstructorEntityDTO() {
-        return constructorEntityDTO;
-    }
-
     public static void initConstructorEntityDTO(String signature, String className, String fileName) {
-        constructorEntityDTO = new ConstructorEntityDTO();
-        constructorEntityDTO.setSignature(signature);
-        constructorEntityDTO.setClassName(className);
-        constructorEntityDTO.setFileName(fileName);
+        constructorContext = new ConstructorContext();
+        constructorContext.setMethodName(signature);
+        constructorContext.setClassName(className);
+        constructorContext.setFileName(fileName);
+    }
+
+    public static void setConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
+        MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
     }
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
@@ -195,16 +178,16 @@ public class SendUtils {
     }
 
     public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
-        assert !constructorEntityDTO.isEmpty();
+        assert !constructorContext.isEmpty();
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
-        AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType, actualType);
-        constructorEntityDTO.addAttributeEntity(attributePayload);
+        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
+        constructorContext.addAttribute(attributePayload);
     }
 
     public static void send() {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(constructorEntityDTO);
+            String json = objectMapper.writeValueAsString(constructorContext);
 //            HttpClientService.post(apiUrl, json);
 //        } catch (InvalidPropertiesFormatException e) {
 //            log.error("Error sending JSON to API : {}", e.getMessage());
