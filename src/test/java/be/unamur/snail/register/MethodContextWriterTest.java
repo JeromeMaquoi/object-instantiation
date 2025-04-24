@@ -48,4 +48,35 @@ class MethodContextWriterTest {
         assertEquals(1, lines.size());
         assertEquals(expectedLine, lines.get(0));
     }
+
+    @Test
+    void splitCstLineWithQuotedFieldsContainingCommasTest() {
+        String line = "/path/to/file,com.example.MyClass,\"myMethod/2[java.lang.String,int]\",\"com.example.MyClass.methodA(MyClass.java:10),com.example.Other.methodB(Other.java:20)\"";
+        String[] expected = {
+                "/path/to/file",
+                "com.example.MyClass",
+                "myMethod/2[java.lang.String,int]",
+                "com.example.MyClass.methodA(MyClass.java:10),com.example.Other.methodB(Other.java:20)"
+        };
+
+        String[] actual = writer.splitCsvLine(line);
+        assertArrayEquals(expected, actual);
+    }
+
+    @Test
+    void writeIfNotExistsWriteOnlyOnceTest() throws IOException {
+        MethodContext context = new MethodContext(
+                "/path/to/MyClass.java",
+                "com.example.MyClass",
+                "doSomething",
+                List.of("java.lang.String"),
+                List.of(new StackTraceElement("com.example.MyClass", "doSomething", "MyClass.java", 10))
+        );
+        writer.writeIfNotExists(context);
+        writer.writeIfNotExists(context);
+
+        List<String> lines = Files.readAllLines(tempFile);
+        assertEquals(1, lines.size());
+        assertTrue(lines.get(0).contains("doSomething/1[java.lang.String]"), "Method with args should be written");
+    }
 }

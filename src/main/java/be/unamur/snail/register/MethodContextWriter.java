@@ -1,33 +1,35 @@
 package be.unamur.snail.register;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class MethodContextWriter {
     private final String csvFilePath;
     private final Map<String, Set<String>> existingEntries;
 
-    public MethodContextWriter(String csvFilePath) throws IOException {
+    public MethodContextWriter(String csvFilePath) {
         this.csvFilePath = csvFilePath;
         this.existingEntries = new HashMap<>();
-        loadExistingEntries();
     }
 
-    public void loadExistingEntries() throws IOException {
-        File file = new File(csvFilePath);
-        if (!file.exists()) {
-            return;
-        }
-        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-            String line;
-            boolean isFirst = true;
-            while ((line = br.readLine()) != null) {
+    public String[] splitCsvLine(String line) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inQuotes = false;
 
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '\"') {
+                inQuotes = !inQuotes;
+            } else if (c == ',' && !inQuotes) {
+                tokens.add(current.toString());
+                current.setLength(0);
+            } else {
+                current.append(c);
             }
         }
+        tokens.add(current.toString());
+        return tokens.toArray(new String[0]);
     }
 
     public synchronized void writeIfNotExists(MethodContext methodContext) throws IOException {

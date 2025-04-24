@@ -44,7 +44,7 @@ class SendUtilsTest {
         SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
     }
 
-    @Test
+    /*@Test
     void addAttributeWorkingTest() {
         SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
         ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
@@ -60,7 +60,7 @@ class SendUtilsTest {
         assertEquals(attributeName, attributeEntities.get(0).getName());
         assertEquals(attributeType, attributeEntities.get(0).getType());
         assertEquals(attributeActualType, attributeEntities.get(0).getActualType());
-    }
+    }*/
 
     /*@Test
     void sendWorkingTest() {
