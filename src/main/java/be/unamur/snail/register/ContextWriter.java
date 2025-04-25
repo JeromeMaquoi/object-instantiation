@@ -3,13 +3,12 @@ package be.unamur.snail.register;
 import java.io.*;
 import java.util.*;
 
-public class MethodContextWriter {
+public class ContextWriter<T extends CsvWritableContext> {
     private final String csvFilePath;
-    private final Map<String, Set<String>> existingEntries;
+    private final Map<String, Set<String>> existingEntries = new HashMap<>();
 
-    public MethodContextWriter(String csvFilePath) {
+    public ContextWriter(String csvFilePath) {
         this.csvFilePath = csvFilePath;
-        this.existingEntries = new HashMap<>();
     }
 
     public String[] splitCsvLine(String line) {
@@ -32,9 +31,10 @@ public class MethodContextWriter {
         return tokens.toArray(new String[0]);
     }
 
-    public synchronized void writeIfNotExists(MethodContext methodContext) throws IOException {
-        String key = methodContext.getClassName() + "|" + methodContext.getFileName();
-        String csvRow = methodContext.toCsvRow();
+    public synchronized void writeIfNotExists(T context) throws IOException {
+        System.out.println("context : " + context);
+        String key = context.getClassName() + "|" + context.getFileName();
+        String csvRow = context.toCsvRow();
 
         existingEntries.putIfAbsent(key, new HashSet<>());
         if (!existingEntries.get(key).contains(csvRow)) {

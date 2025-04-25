@@ -10,23 +10,19 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
-    private static String CSV_HEADER = "file,class,method,stacktrace\n";
-    private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
+    private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
+    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
     private static StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
     private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
-
-    // Injector for tests
-    public static void setWriter(MethodContextWriter newWriter) {
-        writer = newWriter;
-    }
 
     // Injector for tests
     public static void setStackTraceHelper(StackTraceHelper newHelper) {
@@ -55,23 +51,61 @@ public class SendUtils {
         constructorContext.addAttribute(attributePayload);
     }
 
+    public static void getSnapshot(Object obj) {
+        if (constructorContext == null || constructorContext.isEmpty()) {
+            throw new IllegalStateException("ConstructorContext is not initialized");
+        }
+        try {
+            String fileName = UUID.randomUUID() + ".json";
+            Path snapshotDir = Paths.get(System.getenv("SNAPSHOT_DIR"));
+            Files.createDirectories(snapshotDir);
+            Path filePath = snapshotDir.resolve(fileName);
+
+            String json = serializeToJson(obj, new HashSet<>());
+            Files.writeString(filePath, json);
+
+            constructorContext.setSnapshotFilePath(filePath.toString());
+        } catch (IOException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static String serializeToJson(Object obj, Set<Object> visited) throws IllegalAccessException {
+        return "test";
+    }
+
+    public static void writeConstructorContext() {
+        ContextWriter<ConstructorContext> writer = new ContextWriter<>(System.getenv("CSV_CONSTRUCTOR_FILE_PATH"));
+
+        try {
+            ensureHeaderWritten(System.getenv("CSV_CONSTRUCTOR_FILE_PATH"), CSV_HEADER_CONSTRUCTOR);
+            writer.writeIfNotExists(constructorContext);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+
+
 
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
+        ContextWriter<MethodContext> writer = new ContextWriter<>(System.getenv("CSV_METHOD_FILE_PATH"));
         try {
-            ensureHeaderWritten();
+            ensureHeaderWritten(System.getenv("CSV_METHOD_FILE_PATH"), CSV_HEADER_METHOD);
             writer.writeIfNotExists(context);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void ensureHeaderWritten() throws IOException {
-        File csvFile = new File(System.getenv("CSV_FILE_PATH"));
+    private static void ensureHeaderWritten(String csvFilePath, String header) throws IOException {
+        File csvFile = new File(csvFilePath);
         if (!csvFile.exists()) {
-            Files.write(Paths.get(csvFile.toURI()), CSV_HEADER.getBytes());
+            Files.write(Paths.get(csvFile.toURI()), header.getBytes());
         }
     }
 
@@ -99,19 +133,6 @@ public class SendUtils {
 
         return stackTraceSnapshotElementDTO;
     }*/
-
-    public static void setCallerContext(String constructorName, Object obj) {
-        /*List<StackTraceElement> projectStackTrace = getStackTrace();
-
-        StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
-//        System.out.println("\n");
-//        System.out.println(stackTraceDTO);
-//        System.out.println("\n");
-
-        printFields(obj, 0);
-
-//        System.out.println("\n\n");*/
-    }
 
     private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
         StackTraceDTO stackTraceDTO = new StackTraceDTO();

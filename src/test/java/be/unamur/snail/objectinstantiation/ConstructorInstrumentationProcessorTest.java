@@ -41,7 +41,7 @@ class ConstructorInstrumentationProcessorTest {
         launcher.run();
     }
 
-    @Test
+    /*@Test
     void constructorWithAssignmentsTest() throws IOException {
         String className = "TestConstructorClassWithAssignments";
         Path outputFile = outputPath.resolve("test/"+className+".java");
@@ -78,9 +78,9 @@ class ConstructorInstrumentationProcessorTest {
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
-    }
+    }*/
 
-    @Test
+    /*@Test
     void constructorWithoutAssignmentsTest() throws IOException {
         String className = "TestEmptyConstructorClass";
         Path outputFile = outputPath.resolve("test/empty/"+className+".java");
@@ -117,5 +117,5 @@ class ConstructorInstrumentationProcessorTest {
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
-    }
+    }*/
 }

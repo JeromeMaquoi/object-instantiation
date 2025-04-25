@@ -12,14 +12,14 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class MethodContextWriterTest {
+class ContextWriterTest {
     private Path tempFile;
-    private MethodContextWriter writer;
+    private ContextWriter writer;
 
     @BeforeEach
     void setUp() throws IOException {
         tempFile = Files.createTempFile("temp_method_context_test", ".csv");
-        writer = new MethodContextWriter(tempFile.toString());
+        writer = new ContextWriter(tempFile.toString());
     }
 
     @AfterEach

@@ -2,7 +2,7 @@ package be.unamur.snail.register;
 
 import java.util.List;
 
-public class MethodContext {
+public class MethodContext implements CsvWritableContext {
     private final String fileName;
     private final String className;
     private final String methodName;
@@ -17,31 +17,20 @@ public class MethodContext {
         this.stackTrace = stackTrace;
     }
 
+    @Override
     public String getFileName() {
         return fileName;
     }
 
+    @Override
     public String getClassName() {
         return className;
     }
 
+    @Override
     public String toCsvRow() {
-        String methodWithParameters = createMethodWithParameters();
-        String traceStr = createStackTrace();
+        String methodWithParameters = createMethodWithParameters(methodName, parameters);
+        String traceStr = createStackTrace(stackTrace);
         return String.format("%s,%s,%s,%s", fileName, className, methodWithParameters, traceStr);
-    }
-
-    public String createMethodWithParameters() {
-        String paramStr = String.join(",", parameters);
-        if (!parameters.isEmpty())  return "\"" + methodName + "/" + parameters.size() + "[" + paramStr + "]" + "\"";
-        else return "\""+ methodName + "/" + 0 + "\"";
-    }
-
-    public String createStackTrace() {
-        String traceStr = stackTrace.stream()
-                .map(StackTraceElement::toString)
-                .reduce((a, b) -> a + "," + b)
-                .orElse("");
-        return "\"" + traceStr + "\"";
     }
 }

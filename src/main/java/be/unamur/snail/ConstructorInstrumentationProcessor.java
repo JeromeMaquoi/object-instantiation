@@ -9,7 +9,6 @@ import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,11 +39,11 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             }
         }
 
-        CtInvocation<?> setCallerContextInvocation = createSetCallerContextInvocation(factory, constructor);
-        constructor.getBody().insertEnd(setCallerContextInvocation);
+        CtInvocation<?> getSnapshotInvocation = createGetSnapshotInvocation(factory, constructor);
+        constructor.getBody().insertEnd(getSnapshotInvocation);
 
-        CtInvocation<?> sendInvocation = createSendMethodInvocation(factory);
-        constructor.getBody().addStatement(sendInvocation);
+        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory);
+        constructor.getBody().addStatement(writeConstructorContextInvocation);
     }
 
     private String getFileName(CtConstructor<?> constructor) {
@@ -63,23 +62,38 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return constructorParameters;
     }
 
-    private CtInvocation<?> createSetCallerContextInvocation(Factory factory, CtConstructor<?> constructor) {
+    private CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtConstructor<?> constructor) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> setCallerContextMethod = factory.Executable().createReference(
+        CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
                 factory.Type().voidPrimitiveType(),
-                "setCallerContext"
+                "getSnapshot"
         );
 
         CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
 
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
-                setCallerContextMethod,
-                factory.Code().createLiteral(constructor.getDeclaringType().getSimpleName()),
+                getSnapshotMethod,
                 thisAccess
         );
     }
+
+    private CtInvocation<?> createWriteConstructorContextInvocation(Factory factory) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "writeConstructorContext"
+        );
+
+        return factory.Code().createInvocation(
+                factory.Code().createTypeAccess(registerUtilsType),
+                writeConstructorContextMethod
+        );
+    }
+
+
 
     private CtInvocation<?> createInitConstructorContextInvocation(String fileName, String className, String constructorName, List<String> constructorParameters) {
         Factory factory = getFactory();

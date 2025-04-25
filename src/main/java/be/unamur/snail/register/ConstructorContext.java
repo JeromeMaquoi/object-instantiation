@@ -4,13 +4,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class ConstructorContext {
+public class ConstructorContext implements CsvWritableContext {
     private String fileName;
     private String className;
     private String methodName;
     private List<String> parameters;
-    private Set<AttributeContext> attributes = new HashSet<>();
+    private Set<AttributeContext> attributes;
     private List<StackTraceElement> stackTrace;
+    private String snapshotFilePath;
 
     public ConstructorContext(String fileName, String className, String methodName, List<String> parameters, Set<AttributeContext> attributes, List<StackTraceElement> stackTrace) {
         this.fileName = fileName;
@@ -19,30 +20,28 @@ public class ConstructorContext {
         this.parameters = parameters;
         this.attributes = attributes;
         this.stackTrace = stackTrace;
+        this.snapshotFilePath = "";
     }
 
     public String getMethodName() {
         return methodName;
     }
 
-    public void setMethodName(String methodName) {
-        this.methodName = methodName;
-    }
-
+    @Override
     public String getClassName() {
         return className;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
+    @Override
     public String getFileName() {
         return fileName;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    @Override
+    public String toCsvRow() {
+        String constructorWithParameters = createMethodWithParameters(methodName, parameters);
+        String traceString = createStackTrace(stackTrace);
+        return String.format("%s,%s,%s,%s,%s,%s,%s", fileName,className,constructorWithParameters,attributes.size(),attributes,traceString,snapshotFilePath);
     }
 
     public List<String> getParameters() {
@@ -61,17 +60,28 @@ public class ConstructorContext {
         return stackTrace;
     }
 
+    public String getSnapshotFilePath() {
+        return snapshotFilePath;
+    }
+
+    public void setSnapshotFilePath(String snapshotFilePath) {
+        this.snapshotFilePath = snapshotFilePath;
+    }
+
     public boolean isEmpty() {
         return methodName == null && className == null && fileName == null;
     }
 
     @Override
     public String toString() {
-        return "ConstructorEntityDTO{" +
-                "signature='" + methodName + '\'' +
+        return "ConstructorContext{" +
+                "fileName='" + fileName + '\'' +
                 ", className='" + className + '\'' +
-                ", fileName='" + fileName + '\'' +
-                ", attributeEntities=" + attributes +
+                ", methodName='" + methodName + '\'' +
+                ", parameters=" + parameters +
+                ", attributes=" + attributes +
+                ", stackTrace=" + stackTrace +
+                ", snapshotFilePath='" + snapshotFilePath + '\'' +
                 '}';
     }
 }
