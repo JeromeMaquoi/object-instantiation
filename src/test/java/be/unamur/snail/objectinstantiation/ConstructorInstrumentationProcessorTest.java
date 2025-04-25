@@ -30,7 +30,7 @@ class ConstructorInstrumentationProcessorTest {
     Path outputPath;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         inputPath = Paths.get("src/test/resources/test-inputs/");
         outputPath = tempDir.resolve("output");
 
@@ -58,9 +58,9 @@ class ConstructorInstrumentationProcessorTest {
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorContext"))
                 .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
+        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
         long sendInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
@@ -97,9 +97,9 @@ class ConstructorInstrumentationProcessorTest {
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorContext"))
                 .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
+        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
         long sendInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
