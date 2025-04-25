@@ -219,22 +219,4 @@ public class SendUtils {
             }
         }
     }
-
-    public static void send() {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(constructorContext);
-//            HttpClientService.post(apiUrl, json);
-//        } catch (InvalidPropertiesFormatException e) {
-//            log.error("Error sending JSON to API : {}", e.getMessage());
-        } catch (JsonProcessingException e) {
-            log.error("Error serializing constructorEntityDTO to JSON: {}", e.getMessage());
-        } catch (IOException e) {
-            log.error("IOException: {}", e.getMessage());
-//        } catch (InterruptedException e) {
-//            log.error("InterruptedException: {}", e.getMessage());
-        } catch (RuntimeException e) {
-            log.error("RuntimeException: {}", e.getMessage());
-        }
-    }
 }

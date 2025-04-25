@@ -22,7 +22,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
         String fileName = getFileName(constructor);
         String className = constructor.getDeclaringType().getQualifiedName();
-        String constructorName = constructor.getDeclaringType().getQualifiedName();
+        String constructorName = constructor.getDeclaringType().getSimpleName();
         List<String> constructorParameters = createConstructorParameterList(constructor);
 
         CtInvocation<?> initConstructorInvocation = createInitConstructorContextInvocation(fileName, className, constructorName, constructorParameters);
@@ -128,20 +128,6 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType),
                 fieldAccess
-        );
-    }
-
-    private CtInvocation<?> createSendMethodInvocation(Factory factory) {
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> sendMethod = factory.Executable().createReference(
-                registerUtilsType,
-                factory.Type().voidPrimitiveType(),
-                "send"
-        );
-
-        return factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
-                sendMethod
         );
     }
 }

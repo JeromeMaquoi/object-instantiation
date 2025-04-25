@@ -32,7 +32,6 @@ public class ContextWriter<T extends CsvWritableContext> {
     }
 
     public synchronized void writeIfNotExists(T context) throws IOException {
-        System.out.println("context : " + context);
         String key = context.getClassName() + "|" + context.getFileName();
         String csvRow = context.toCsvRow();
 
