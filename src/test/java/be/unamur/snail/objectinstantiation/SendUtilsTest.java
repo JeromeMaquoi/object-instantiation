@@ -4,17 +4,39 @@ import be.unamur.snail.register.AttributeContext;
 import be.unamur.snail.register.ConstructorContext;
 import be.unamur.snail.register.SendUtils;
 import be.unamur.snail.register.StackTraceHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class SendUtilsTest {
+    private static Path tempDir;
+
+    static class DummyClass {
+        private String name;
+        private int value;
+
+        public DummyClass(String name, int value) {
+            this.name = name;
+            this.value = value;
+        }
+    }
+
+    @BeforeAll
+    static void setUpClass() throws IOException {
+        tempDir = Files.createTempDirectory("snapshotTest");
+        System.setProperty("SNAPSHOT_DIR", tempDir.toString());
+    }
+
     @BeforeEach
     void setUp() {
         StackTraceHelper mockStackTraceHelper = mock(StackTraceHelper.class);
@@ -23,6 +45,22 @@ class SendUtilsTest {
         ));
         SendUtils.setStackTraceHelper(mockStackTraceHelper);
         SendUtils.setConstructorContext(null);
+    }
+
+    @AfterEach
+    void tearDown() throws IOException {
+        Files.walk(tempDir)
+                .filter(Files::isRegularFile)
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                    } catch (IOException e) {}
+                });
+    }
+
+    @AfterAll
+    static void cleanUpClass() throws IOException {
+        Files.deleteIfExists(tempDir);
     }
 
     @Test
@@ -59,5 +97,31 @@ class SendUtilsTest {
             SendUtils.addAttribute("field", "String", "value");
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
+    }
+
+    @Test
+    void getSnapshotThrowsIfNotInitialized() {
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            SendUtils.getSnapshot(new Object());
+        });
+        assertEquals("ConstructorContext is not initialized", exception.getMessage());
+    }
+
+    @Test
+    void getSnapshotCreatesJsonAndUpdatesConstructorContextTest() throws IOException {
+        DummyClass dummy = new DummyClass("dummy", 1);
+        SendUtils.setConstructorContext(new ConstructorContext("file.java", "Class", "method", List.of("String", "int"), Set.of(), List.of()));
+
+        SendUtils.getSnapshot(dummy);
+
+        String snapshotPath = SendUtils.getConstructorContext().getSnapshotFilePath();
+        assertNotNull(snapshotPath, "Snapshot path should not be null");
+
+        Path filePath = Paths.get(snapshotPath);
+        assertTrue(Files.exists(filePath), "Snapshot file should exist");
+
+        String json = Files.readString(filePath);
+        assertTrue(json.contains("example"));
+        assertTrue(json.contains("123"));
     }
 }
