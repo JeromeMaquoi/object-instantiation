@@ -1,74 +1,63 @@
 package be.unamur.snail.objectinstantiation;
 
+import be.unamur.snail.register.AttributeContext;
+import be.unamur.snail.register.ConstructorContext;
+import be.unamur.snail.register.SendUtils;
+import be.unamur.snail.register.StackTraceHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 class SendUtilsTest {
-    private static final String FAKE_API_URL = "http://test-send-utils-api-fake-url/";
-    private static final String PROJECT_PACKAGE_PREFIX = "org.springframework";
-
-    private String constructorSignature;
-    private String constructorClassName;
-    private String constructorFileName;
-    private String attributeName;
-    private String attributeType;
-    private String attributeActualType;
-
-    /*@BeforeEach
+    @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        StackTraceHelper mockStackTraceHelper = mock(StackTraceHelper.class);
+        when(mockStackTraceHelper.getFilteredAndReversedStackTrace()).thenReturn(List.of(
+                new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30)
+        ));
+        SendUtils.setStackTraceHelper(mockStackTraceHelper);
+    }
 
-        SendUtils.setApiURL(FAKE_API_URL);
-        SendUtils.setProjectPackagePrefix(PROJECT_PACKAGE_PREFIX);
+    @Test
+    void initConstructorContextStoresCorrectContextTest() {
+        SendUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        ConstructorContext context = SendUtils.getConstructorContext();
 
-        constructorSignature = "constructorSignature";
-        constructorClassName = "constructorClassName";
-        constructorFileName = "constructorFileName";
-        attributeName = "attributeName";
-        attributeType = "attributeType";
-        attributeActualType = "java.lang.String";
+        assertNotNull(context);
+        assertEquals("file.java", context.getFileName());
+        assertEquals("Class", context.getClassName());
+        assertEquals("method", context.getMethodName());
+        assertEquals(List.of("java.lang.String"), context.getParameters());
+        assertFalse(context.getStackTrace().isEmpty());
+    }
 
-        SendUtils.initConstructorEntityDTO(constructorSignature, constructorClassName, constructorFileName);
-    }*/
+    @Test
+    void testAddAttributeAddsToConstructorContext() {
+        SendUtils.initConstructorContext("file", "Class", "init", List.of());
 
-    /*@Test
-    void addAttributeWorkingTest() {
-        SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
-        ConstructorEntityDTO constructorEntityDTO = SendUtils.getConstructorEntityDTO();
-        assertNotNull(constructorEntityDTO);
-        assertEquals(constructorSignature, constructorEntityDTO.getSignature());
-        assertEquals(constructorClassName, constructorEntityDTO.getClassName());
-        assertEquals(constructorFileName, constructorEntityDTO.getFileName());
+        SendUtils.addAttribute("field", "String", "hello");
 
-        List<AttributeEntityDTO> attributeEntities = new ArrayList<>(constructorEntityDTO.getAttributeEntities());
+        ConstructorContext context = SendUtils.getConstructorContext();
+        assertEquals(1, context.getAttributes().size());
 
-        assertNotNull(attributeEntities);
-        assertEquals(1, attributeEntities.size());
-        assertEquals(attributeName, attributeEntities.get(0).getName());
-        assertEquals(attributeType, attributeEntities.get(0).getType());
-        assertEquals(attributeActualType, attributeEntities.get(0).getActualType());
-    }*/
+        AttributeContext attr = context.getAttributes().iterator().next();
+        assertEquals("field", attr.getName());
+        assertEquals("String", attr.getType());
+        assertEquals("java.lang.String", attr.getActualType());
+    }
 
-    /*@Test
-    void sendWorkingTest() {
-        try (MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            SendUtils.addAttribute(attributeName, attributeType, attributeActualType);
-            String jsonPayload = "{\"name\":\"name\",\"signature\":\"signature\",\"className\":\"className\",\"fileName\":\"fileName\",\"attributeEntities\":[{\"name\":\"attributeName\",\"type\":\"attributeType\"}]}";
-
-            mockedHttpClientServiceMock.when(() -> HttpClientService.post(FAKE_API_URL, jsonPayload)).thenReturn("Success");
-
-            SendUtils.send();
-
-            mockedHttpClientServiceMock.verify(() -> HttpClientService.post(eq(FAKE_API_URL), anyString()), times(1));
-        }
-    }*/
-
-    /*@Test
-    void sendThrowsExceptionTest() {
-        try(MockedStatic<HttpClientService> mockedHttpClientServiceMock = mockStatic(HttpClientService.class)) {
-            mockedHttpClientServiceMock.when(() -> HttpClientService.post(eq(SendUtils.getApiURL()), anyString())).thenThrow(new RuntimeException("HTTP error"));
-
-            // Assert that an exception is thrown when calling send
-            RuntimeException thrown = assertThrows(RuntimeException.class, SendUtils::send);
-
-            assertEquals("HTTP error", thrown.getMessage());
-        }
-    }*/
+    @Test
+    void testAddAttributeThrowsIfNotInitialized() {
+        Exception exception = assertThrows(IllegalStateException.class, () -> {
+            SendUtils.addAttribute("field", "String", "value");
+        });
+        assertEquals("ConstructorContext is not initialized", exception.getMessage());
+    }
 }

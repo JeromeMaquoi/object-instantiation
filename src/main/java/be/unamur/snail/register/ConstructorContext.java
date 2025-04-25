@@ -12,7 +12,14 @@ public class ConstructorContext {
     private Set<AttributeContext> attributes = new HashSet<>();
     private List<StackTraceElement> stackTrace;
 
-    ConstructorContext(){}
+    public ConstructorContext(String fileName, String className, String methodName, List<String> parameters, Set<AttributeContext> attributes, List<StackTraceElement> stackTrace) {
+        this.fileName = fileName;
+        this.className = className;
+        this.methodName = methodName;
+        this.parameters = parameters;
+        this.attributes = attributes;
+        this.stackTrace = stackTrace;
+    }
 
     public String getMethodName() {
         return methodName;
@@ -38,12 +45,20 @@ public class ConstructorContext {
         this.fileName = fileName;
     }
 
+    public List<String> getParameters() {
+        return parameters;
+    }
+
     public Set<AttributeContext> getAttributes() {
         return attributes;
     }
 
     public void addAttribute(AttributeContext attributeContext) {
         this.attributes.add(attributeContext);
+    }
+
+    public List<StackTraceElement> getStackTrace() {
+        return stackTrace;
     }
 
     public boolean isEmpty() {

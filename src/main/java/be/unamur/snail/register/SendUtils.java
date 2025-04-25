@@ -16,24 +16,42 @@ import java.util.*;
 public class SendUtils {
     private static String CSV_HEADER = "file,class,method,stacktrace\n";
     private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
-    private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+    private static StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
     private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
 
-    public static void initConstructorEntityDTO(String signature, String className, String fileName) {
-        constructorContext = new ConstructorContext();
-        constructorContext.setMethodName(signature);
-        constructorContext.setClassName(className);
-        constructorContext.setFileName(fileName);
+    // Injector for tests
+    public static void setWriter(MethodContextWriter newWriter) {
+        writer = newWriter;
     }
 
-    public static void setConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
-        MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
+    // Injector for tests
+    public static void setStackTraceHelper(StackTraceHelper newHelper) {
+        stackTraceHelper = newHelper;
     }
+
+    public static ConstructorContext getConstructorContext() {
+        return constructorContext;
+    }
+
+    public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
+        constructorContext = new ConstructorContext(fileName, className, methodName, parameters, new HashSet<>(), stackTrace);
+    }
+
+    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
+        if (constructorContext == null || constructorContext.isEmpty()) {
+            throw new IllegalStateException("ConstructorContext is not initialized");
+        }
+        String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
+        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
+        constructorContext.addAttribute(attributePayload);
+    }
+
+
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
@@ -175,13 +193,6 @@ public class SendUtils {
                 System.out.printf("    Unable to access field: %s%n", field.getName());
             }
         }
-    }
-
-    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
-        assert !constructorContext.isEmpty();
-        String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
-        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
-        constructorContext.addAttribute(attributePayload);
     }
 
     public static void send() {
