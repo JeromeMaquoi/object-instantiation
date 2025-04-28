@@ -40,7 +40,7 @@ class SendUtilsTest {
     @BeforeEach
     void setUp() {
         StackTraceHelper mockStackTraceHelper = mock(StackTraceHelper.class);
-        when(mockStackTraceHelper.getFilteredAndReversedStackTrace()).thenReturn(List.of(
+        when(mockStackTraceHelper.getFilteredStackTrace()).thenReturn(List.of(
                 new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30)
         ));
         SendUtils.setStackTraceHelper(mockStackTraceHelper);

@@ -38,7 +38,7 @@ public class SendUtils {
     }
 
     public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         constructorContext = new ConstructorContext(fileName, className, methodName, parameters, new HashSet<>(), stackTrace);
     }
 
