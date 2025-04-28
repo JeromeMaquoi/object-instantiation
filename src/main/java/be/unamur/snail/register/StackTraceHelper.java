@@ -14,10 +14,8 @@ public class StackTraceHelper {
     }
 
     public List<StackTraceElement> getFilteredStackTrace() {
-        List<StackTraceElement> projectStackTrace = new ArrayList<>(Arrays.stream(stackTraceProvider.getStackTrace())
+        return new ArrayList<>(Arrays.stream(stackTraceProvider.getStackTrace())
                 .filter(element -> element.getClassName().startsWith(projectPackagePrefix))
                 .toList());
-//        Collections.reverse(projectStackTrace);
-        return projectStackTrace;
     }
 }
