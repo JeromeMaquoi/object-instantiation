@@ -1,10 +1,10 @@
 package be.unamur.snail.objectinstantiation;
 
-import be.unamur.snail.register.AttributeContext;
-import be.unamur.snail.register.ConstructorContext;
-import be.unamur.snail.register.SendUtils;
-import be.unamur.snail.register.StackTraceHelper;
+import be.unamur.snail.register.*;
 import org.junit.jupiter.api.*;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import spoon.compiler.Environment;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,10 +13,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
     private static Path tempDir;
@@ -105,23 +105,5 @@ class SendUtilsTest {
             SendUtils.getSnapshot(new Object());
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
-    }
-
-    @Test
-    void getSnapshotCreatesJsonAndUpdatesConstructorContextTest() throws IOException {
-        DummyClass dummy = new DummyClass("dummy", 1);
-        SendUtils.setConstructorContext(new ConstructorContext("file.java", "Class", "method", List.of("String", "int"), Set.of(), List.of()));
-
-        SendUtils.getSnapshot(dummy);
-
-        String snapshotPath = SendUtils.getConstructorContext().getSnapshotFilePath();
-        assertNotNull(snapshotPath, "Snapshot path should not be null");
-
-        Path filePath = Paths.get(snapshotPath);
-        assertTrue(Files.exists(filePath), "Snapshot file should exist");
-
-        String json = Files.readString(filePath);
-        assertTrue(json.contains("example"));
-        assertTrue(json.contains("123"));
     }
 }

@@ -1,7 +1,5 @@
 package be.unamur.snail.register;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +15,8 @@ import java.util.*;
 public class SendUtils {
     private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
     private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
-    private static StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+    public static EnvVariables envVariables = new EnvVariables();
+    private static StackTraceHelper stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
     private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
@@ -57,30 +56,37 @@ public class SendUtils {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         try {
-            String fileName = UUID.randomUUID() + ".json";
-            Path snapshotDir = Paths.get(System.getenv("SNAPSHOT_DIR"));
-            Files.createDirectories(snapshotDir);
-            Path filePath = snapshotDir.resolve(fileName);
-
+            Path filePath = prepareSnapshotFilePath();
             String json = serializeToJson(obj, new HashSet<>());
-            Files.writeString(filePath, json);
-
+            writeJsonToFile(filePath, json);
             constructorContext.setSnapshotFilePath(filePath.toString());
         } catch (IOException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public static Path prepareSnapshotFilePath() throws IOException {
+        String fileName = UUID.randomUUID() + ".json";
+        Path snapshotDir = Paths.get(envVariables.getEnvVariable("SNAPSHOT_DIR"));
+        Files.createDirectories(snapshotDir);
+        return snapshotDir.resolve(fileName);
+    }
+
+    public static void writeJsonToFile(Path filePath, String json) throws IOException {
+        Files.writeString(filePath, json);
+    }
+
     public static String serializeToJson(Object obj, Set<Object> visited) throws IllegalAccessException {
         // TODO
+        System.out.println("obj: " + obj);
         return "test";
     }
 
     public static void writeConstructorContext() {
-        ContextWriter<ConstructorContext> writer = new ContextWriter<>(System.getenv("CSV_CONSTRUCTOR_FILE_PATH"));
+        ContextWriter<ConstructorContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_CONSTRUCTOR_FILE_PATH"));
 
         try {
-            ensureHeaderWritten(System.getenv("CSV_CONSTRUCTOR_FILE_PATH"), CSV_HEADER_CONSTRUCTOR);
+            ensureHeaderWritten(envVariables.getEnvVariable("CSV_CONSTRUCTOR_FILE_PATH"), CSV_HEADER_CONSTRUCTOR);
             writer.writeIfNotExists(constructorContext);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -95,9 +101,9 @@ public class SendUtils {
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
-        ContextWriter<MethodContext> writer = new ContextWriter<>(System.getenv("CSV_METHOD_FILE_PATH"));
+        ContextWriter<MethodContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_METHOD_FILE_PATH"));
         try {
-            ensureHeaderWritten(System.getenv("CSV_METHOD_FILE_PATH"), CSV_HEADER_METHOD);
+            ensureHeaderWritten(envVariables.getEnvVariable("CSV_METHOD_FILE_PATH"), CSV_HEADER_METHOD);
             writer.writeIfNotExists(context);
         } catch (IOException e) {
             e.printStackTrace();
