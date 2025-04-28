@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class StackTraceHelperTest {
     @Test
-    void getFilteredAndReversedStackTraceTest() {
+    void getFilteredStackTraceTest() {
         StackTraceElement[] fakeStackTrace = {
                 new StackTraceElement("org.springframework.boot.ApplicationEnvironment", "createPropertyResolver", "ApplicationEnvironment.java", 43),
                 new StackTraceElement("org.springframework.core.env.AbstractEnvironment", "<init>", "AbstractEnvironment.java", 137),
@@ -17,11 +17,11 @@ class StackTraceHelperTest {
         StackTraceProvider mockProvider = () -> fakeStackTrace;
         StackTraceHelper helper = new StackTraceHelper("org.springframework", mockProvider);
 
-        List<StackTraceElement> result = helper.getFilteredAndReversedStackTrace();
+        List<StackTraceElement> result = helper.getFilteredStackTrace();
 
         assertEquals(3, result.size());
-        assertEquals("createEnvironment", result.get(0).getMethodName());
+        assertEquals("createEnvironment", result.get(2).getMethodName());
         assertEquals("<init>", result.get(1).getMethodName());
-        assertEquals("createPropertyResolver", result.get(2).getMethodName());
+        assertEquals("createPropertyResolver", result.get(0).getMethodName());
     }
 }
