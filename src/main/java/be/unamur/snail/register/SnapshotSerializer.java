@@ -1,9 +1,8 @@
 package be.unamur.snail.register;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class SnapshotSerializer {
     private SnapshotSerializer() {}
@@ -15,10 +14,12 @@ public class SnapshotSerializer {
 
         Class<?> clazz = object.getClass();
 
-        System.out.println("\n\nclazz: " + clazz);
-        System.out.println("\nobject: " + object);
-        if (isPrimitiveOrWrapper(object)) {
+        System.out.println("\nclazz: " + clazz);
+        System.out.println("object: " + object);
+        if (isPrimitive(object)) {
             return serializePrimitive(object);
+        } else if (isString(object)) {
+            return serializeString(object);
         } else if (clazz.isArray()) {
             return serializeArray(object, visitedObjects);
         } else if (object instanceof Collection) {
@@ -34,24 +35,60 @@ public class SnapshotSerializer {
         }
     }
 
-    public static boolean isPrimitiveOrWrapper(Object object) {
-        return object instanceof String || object instanceof Number || object instanceof Boolean || object instanceof Character;
+    public static boolean isPrimitive(Object object) {
+        return object instanceof Number || object instanceof Boolean;
+    }
+
+    public static boolean isString(Object object) {
+        return object instanceof String || object instanceof Character;
     }
 
     public static String serializePrimitive(Object object) {
+        return object.toString();
+    }
+
+    public static String serializeString(Object object) {
+        System.out.println("string : " + object);
         return "\"" + object.toString() + "\"";
     }
 
     public static String serializeArray(Object object, Set<Object> visitedObjects) {
-        return "TODO ARRAY";
+        int length = Array.getLength(object);
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < length; i++) {
+            Object item = Array.get(object, i);
+            sb.append(serializeToJson(item, visitedObjects));
+            if (i < length - 1) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     public static String serializeCollection(Collection<?> collection, Set<Object> visitedObjects) {
-        return "TODO COLLECTION";
+        StringBuilder sb = new StringBuilder("[");
+        Iterator<?> iterator = collection.iterator();
+        while (iterator.hasNext()) {
+            sb.append(serializeToJson(iterator.next(), visitedObjects));
+            if (iterator.hasNext()) sb.append(",");
+        }
+        sb.append("]");
+        return sb.toString();
     }
 
     public static String serializeMap(Map<?, ?> map, Set<Object> visitedObjects) {
-        return "TODO MAP";
+        StringBuilder sb = new StringBuilder("{");
+
+        List<Map.Entry<?,?>> entries = new ArrayList<>(map.entrySet());
+        entries.sort(Comparator.comparing(e -> e.getKey().toString()));
+
+        Iterator<?> iterator = entries.iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<?, ?> entry = (Map.Entry<?, ?>) iterator.next();
+            sb.append("\"").append(String.valueOf(entry.getKey())).append("\":").append(serializeToJson(entry.getValue(), visitedObjects));
+            if (iterator.hasNext()) sb.append(",");
+        }
+        sb.append("}");
+        return sb.toString();
     }
 
     public static String serializePOJO(Object object, Class<?> clazz, Set<Object> visitedObjects) throws IllegalAccessException {

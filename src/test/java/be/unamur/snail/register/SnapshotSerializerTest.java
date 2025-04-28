@@ -1,12 +1,10 @@
 package be.unamur.snail.register;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,21 +32,26 @@ class SnapshotSerializerTest {
         visitedObjects = new HashSet<>();
     }
 
-    @Test
-    void serializePrimitiveTest() {
-        assertEquals("\"10\"", SnapshotSerializer.serializeToJson(10, visitedObjects));
-        assertEquals("\"true\"", SnapshotSerializer.serializeToJson(true, visitedObjects));
-        assertEquals("\"hello\"", SnapshotSerializer.serializeToJson("hello", visitedObjects));
-        assertEquals("\"3.14\"", SnapshotSerializer.serializeToJson(3.14, visitedObjects));
+    @AfterEach
+    void tearDown() {
+        visitedObjects.clear();
     }
 
-    /*@Test
+    @Test
+    void serializePrimitiveTest() {
+        assertEquals("10", SnapshotSerializer.serializeToJson(10, visitedObjects));
+        assertEquals("true", SnapshotSerializer.serializeToJson(true, visitedObjects));
+        assertEquals("\"hello\"", SnapshotSerializer.serializeToJson("hello", visitedObjects));
+        assertEquals("3.14", SnapshotSerializer.serializeToJson(3.14, visitedObjects));
+    }
+
+    @Test
     void serializeArrayTest() {
         int[] array = {1, 2, 3};
-        assertEquals("[1, 2, 3]", SnapshotSerializer.serializeToJson(array, visitedObjects));
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(array, visitedObjects));
 
         String[] stringArray = {"a", "b", "c"};
-        assertEquals("[\"a\", \"b\", \"c\"]", SnapshotSerializer.serializeToJson(stringArray, visitedObjects));
+        assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeToJson(stringArray, visitedObjects));
     }
 
     @Test
@@ -58,23 +61,35 @@ class SnapshotSerializerTest {
     }
 
     @Test
-    void serializeCollectionTest() {
+    void serializeCollectionOfStringsTest() {
         List<String> list = new ArrayList<>();
         list.add("one");
         list.add("two");
         list.add("three");
-        assertEquals("[\"one\", \"two\", \"three\"]", SnapshotSerializer.serializeToJson(list, visitedObjects));
+        assertEquals("[\"one\",\"two\",\"three\"]", SnapshotSerializer.serializeToJson(list, visitedObjects));
+    }
 
+    @Test
+    void serializeCollectionOfIntegersTest() {
         Set<Integer> set = new HashSet<>();
         set.add(1);
         set.add(2);
         set.add(3);
-        assertEquals("[\"1\", \"2\", \"3\"]", SnapshotSerializer.serializeToJson(set, visitedObjects));
-    }*/
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(set, visitedObjects));
+    }
+
+    @Test
+    void serializeSimpleMapStringTest() {
+        Map<String, String> map = new HashMap<>();
+        map.put("key1", "value1");
+        map.put("key2", "value2");
+
+        assertEquals("{\"key1\":\"value1\",\"key2\":\"value2\"}", SnapshotSerializer.serializeToJson(map, visitedObjects));
+    }
 
     @Test
     void serializeSimplePOJOTest() {
         Person person = new Person("John", 42);
-        assertEquals("{\"name\": \"John\", \"age\": \"42\", \"friend\": null}", SnapshotSerializer.serializeToJson(person, visitedObjects));
+        assertEquals("{\"name\": \"John\", \"age\": 42, \"friend\": null}", SnapshotSerializer.serializeToJson(person, visitedObjects));
     }
 }
