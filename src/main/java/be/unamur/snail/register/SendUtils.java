@@ -57,10 +57,10 @@ public class SendUtils {
         }
         try {
             Path filePath = prepareSnapshotFilePath();
-            String json = serializeToJson(obj, new HashSet<>());
+            String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
             writeJsonToFile(filePath, json);
             constructorContext.setSnapshotFilePath(filePath.toString());
-        } catch (IOException | IllegalAccessException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -74,12 +74,6 @@ public class SendUtils {
 
     public static void writeJsonToFile(Path filePath, String json) throws IOException {
         Files.writeString(filePath, json);
-    }
-
-    public static String serializeToJson(Object obj, Set<Object> visited) throws IllegalAccessException {
-        // TODO
-        System.out.println("obj: " + obj);
-        return "test";
     }
 
     public static void writeConstructorContext() {
