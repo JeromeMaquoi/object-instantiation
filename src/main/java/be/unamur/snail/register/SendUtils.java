@@ -53,7 +53,7 @@ public class SendUtils {
     }
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
-        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredAndReversedStackTrace();
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
         try {
             ensureHeaderWritten();

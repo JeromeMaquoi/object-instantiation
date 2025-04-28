@@ -2,7 +2,6 @@ package be.unamur.snail.register;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 public class StackTraceHelper {
@@ -14,11 +13,9 @@ public class StackTraceHelper {
         this.stackTraceProvider = stackTraceProvider;
     }
 
-    public List<StackTraceElement> getFilteredAndReversedStackTrace() {
-        List<StackTraceElement> projectStackTrace = new ArrayList<>(Arrays.stream(stackTraceProvider.getStackTrace())
+    public List<StackTraceElement> getFilteredStackTrace() {
+        return new ArrayList<>(Arrays.stream(stackTraceProvider.getStackTrace())
                 .filter(element -> element.getClassName().startsWith(projectPackagePrefix))
                 .toList());
-        Collections.reverse(projectStackTrace);
-        return projectStackTrace;
     }
 }
