@@ -4,9 +4,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Field;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 class SnapshotSerializerTest {
     private Set<Object> visitedObjects;
@@ -21,11 +23,22 @@ class SnapshotSerializerTest {
             this.name = name;
             this.age = age;
         }
-
-        public void setFriend(Person friend) {
-            this.friend = friend;
-        }
     }
+
+    public static class A {
+        private String a1;
+        private boolean a2;
+    }
+
+    public static class B extends A {
+        private String b1;
+        private int b2;
+        private static boolean staticB3;
+    }
+
+    public static class NoFields {}
+
+
 
     @BeforeEach
     void setUp() {
@@ -91,5 +104,37 @@ class SnapshotSerializerTest {
     void serializeSimplePOJOTest() {
         Person person = new Person("John", 42);
         assertEquals("{\"name\": \"John\", \"age\": 42, \"friend\": null}", SnapshotSerializer.serializeToJson(person, visitedObjects));
+    }
+
+    @Test
+    void getAllFieldsReturnsOwnAndInheritedNonStaticFieldsTest() {
+        B b = new B();
+
+        List<Field> actualFieldList = SnapshotSerializer.getAllNonStaticFields(b);
+
+        List<String> fieldNames = actualFieldList.stream()
+                        .map(Field::getName)
+                        .toList();
+
+        assertThat(fieldNames).containsExactlyInAnyOrder("a1", "a2", "b1", "b2");
+    }
+
+    @Test
+    void getAllFieldsOnClassWithNoFields() {
+        NoFields noFields = new NoFields();
+        List<Field> actualFieldList = SnapshotSerializer.getAllNonStaticFields(noFields);
+        assertTrue(actualFieldList.isEmpty());
+    }
+
+    @Test
+    void getAllNonStaticFieldsOnClassWithStaticField() {
+        List<Field> actualFieldList = SnapshotSerializer.getNonStaticFieldsFromOneClass(B.class);
+
+        List<String> fieldNames = actualFieldList.stream()
+                .map(Field::getName)
+                .toList();
+        assertThat(fieldNames)
+                .containsExactlyInAnyOrder("b1", "b2")
+                .doesNotContain("staticB3");
     }
 }

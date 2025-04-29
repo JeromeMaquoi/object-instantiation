@@ -1,10 +1,17 @@
 package be.unamur.snail.register;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InaccessibleObjectException;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class SnapshotSerializer {
+    private static final Logger log = LoggerFactory.getLogger(SnapshotSerializer.class);
+
     private SnapshotSerializer() {}
 
     public static String serializeToJson(Object object, Set<Object> visitedObjects) {
@@ -14,8 +21,6 @@ public class SnapshotSerializer {
 
         Class<?> clazz = object.getClass();
 
-        System.out.println("\nclazz: " + clazz);
-        System.out.println("object: " + object);
         if (isPrimitive(object)) {
             return serializePrimitive(object);
         } else if (isString(object)) {
@@ -28,7 +33,7 @@ public class SnapshotSerializer {
             return serializeMap((Map<?, ?>) object, visitedObjects);
         } else {
             try {
-                return serializePOJO(object, clazz, visitedObjects);
+                return serializePOJO(object, visitedObjects);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
@@ -48,7 +53,6 @@ public class SnapshotSerializer {
     }
 
     public static String serializeString(Object object) {
-        System.out.println("string : " + object);
         return "\"" + object.toString() + "\"";
     }
 
@@ -84,24 +88,48 @@ public class SnapshotSerializer {
         Iterator<?> iterator = entries.iterator();
         while (iterator.hasNext()) {
             Map.Entry<?, ?> entry = (Map.Entry<?, ?>) iterator.next();
-            sb.append("\"").append(String.valueOf(entry.getKey())).append("\":").append(serializeToJson(entry.getValue(), visitedObjects));
+            sb.append("\"").append(entry.getKey()).append("\":").append(serializeToJson(entry.getValue(), visitedObjects));
             if (iterator.hasNext()) sb.append(",");
         }
         sb.append("}");
         return sb.toString();
     }
 
-    public static String serializePOJO(Object object, Class<?> clazz, Set<Object> visitedObjects) throws IllegalAccessException {
+    public static String serializePOJO(Object object, Set<Object> visitedObjects) throws IllegalAccessException {
         StringBuilder sb = new StringBuilder("{");
-        for (Field field : clazz.getDeclaredFields()) {
-            field.setAccessible(true);
-            Object value = field.get(object);
-            sb.append("\"").append(field.getName()).append("\": ");
-            sb.append(serializeToJson(value, visitedObjects));
-            sb.append(", ");
+        List<Field> fields = getAllNonStaticFields(object);
+        for (Field field : fields) {
+            try {
+                field.setAccessible(true);
+                Object value = field.get(object);
+                sb.append("\"").append(field.getName()).append("\": ");
+                sb.append(serializeToJson(value, visitedObjects));
+                sb.append(", ");
+            } catch (IllegalArgumentException e) {
+                throw new RuntimeException(e);
+            } catch (InaccessibleObjectException ignored) {}
         }
         if (sb.toString().endsWith(", ")) sb.setLength(sb.length() - 2);
         sb.append("}");
         return sb.toString();
+    }
+
+    public static <T> List<Field> getAllNonStaticFields(T t) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> clazz = t.getClass();
+        while (clazz != Object.class) {
+            fields.addAll(getNonStaticFieldsFromOneClass(clazz));
+            clazz = clazz.getSuperclass();
+        }
+        return fields;
+    }
+
+    public static <T> List<Field> getNonStaticFieldsFromOneClass(Class<T> clazz) {
+        Field[] declaredFields = clazz.getDeclaredFields();
+        List<Field> nonStaticFields = new ArrayList<>();
+        for (Field field : declaredFields) {
+            if (!Modifier.isStatic(field.getModifiers())) nonStaticFields.add(field);
+        }
+        return nonStaticFields;
     }
 }

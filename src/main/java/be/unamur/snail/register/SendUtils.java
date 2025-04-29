@@ -172,7 +172,7 @@ public class SendUtils {
     }
     
 
-    private static void printFields(Object obj, int depth) {
+    /*private static void printFields(Object obj, int depth) {
         if (obj == null) {
             log.warn("Object is null.");
             return;
@@ -220,5 +220,5 @@ public class SendUtils {
                 System.out.printf("    Unable to access field: %s%n", field.getName());
             }
         }
-    }
+    }*/
 }
