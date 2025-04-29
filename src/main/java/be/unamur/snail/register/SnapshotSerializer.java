@@ -53,7 +53,10 @@ public class SnapshotSerializer {
     }
 
     public static String serializeString(Object object) {
-        return "\"" + object.toString() + "\"";
+        String raw = object.toString()
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"");
+        return "\"" + raw + "\"";
     }
 
     public static String serializeArray(Object object, Set<Object> visitedObjects) {

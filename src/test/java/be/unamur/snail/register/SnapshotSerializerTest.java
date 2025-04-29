@@ -34,12 +34,24 @@ class SnapshotSerializerTest {
     }
 
     @Test
+    void serializeSpecialCharactersTest() {
+        assertEquals("\"\\\\\"", SnapshotSerializer.serializeString('\\'));
+        assertEquals("\"\\\"${\\\"\"", SnapshotSerializer.serializeString("\"${\""));
+    }
+
+    @Test
     void serializeArrayTest() {
         int[] array = {1, 2, 3};
         assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(array, visitedObjects));
 
         String[] stringArray = {"a", "b", "c"};
         assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeToJson(stringArray, visitedObjects));
+    }
+
+    @Test
+    void serializeArrayWithSpecialCharactersTest() {
+        String[] array = {"\\\"", "\\", "-"};
+        assertEquals("[\"\\\\\\\"\",\"\\\\\",\"-\"]", SnapshotSerializer.serializeArray(array, visitedObjects));
     }
 
     @Test
@@ -111,5 +123,25 @@ class SnapshotSerializerTest {
         assertThat(fieldNames)
                 .containsExactlyInAnyOrder("b1", "b2")
                 .doesNotContain("staticB3");
+    }
+
+    @Test
+    void getAllNonStaticFieldsOnNestedClassWithoutField() {
+        List<Field> actualFieldList = SnapshotSerializer.getNonStaticFieldsFromOneClass(MainClass.NestedClassWithoutField.class);
+
+        List<String> fieldNames = actualFieldList.stream()
+                .map(Field::getName)
+                .toList();
+        assertThat(fieldNames).isEmpty();
+    }
+
+    @Test
+    void getAllNonStaticFieldsOnNestedClassWithoutFieldWithMainClassWithFinalField() {
+        List<Field> actualFieldList = SnapshotSerializer.getNonStaticFieldsFromOneClass(MainClassWithFinalField.NestedClassWithoutField.class);
+
+        List<String> fieldNames = actualFieldList.stream()
+                .map(Field::getName)
+                .toList();
+        assertThat(fieldNames).isEmpty();
     }
 }

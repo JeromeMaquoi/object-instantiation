@@ -25,9 +25,19 @@ public class TestModels {
 
     public static class NoFields {}
 
-    public class A1 {
-        private String a1;
+    public class MainClass {
+        private String m1;
 
-        static class B1 {}
+        public static class NestedClassWithoutField {}
+    }
+
+    public class MainClassWithFinalField {
+        private final String m1;
+
+        public MainClassWithFinalField(String m1) {
+            this.m1 = m1;
+        }
+
+        public static class NestedClassWithoutField {}
     }
 }
