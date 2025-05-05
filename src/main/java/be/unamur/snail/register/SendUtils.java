@@ -38,8 +38,7 @@ public class SendUtils {
     }
 
     public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
-        constructorContext = new ConstructorContext(fileName, className, methodName, parameters, new HashSet<>(), stackTrace);
+        constructorContext = new ConstructorContext().withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
     }
 
     public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
@@ -56,6 +55,8 @@ public class SendUtils {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         try {
+            List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+            constructorContext = constructorContext.withStackTrace(stackTrace);
             Path filePath = prepareSnapshotFilePath();
             String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
             writeJsonToFile(filePath, json);

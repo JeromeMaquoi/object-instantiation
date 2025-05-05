@@ -14,7 +14,7 @@ class ConstructorContextTest {
         AttributeContext attr2 = new AttributeContext("field2", "int", "int");
         Set<AttributeContext> attributes = Set.of(attr1, attr2);
 
-        ConstructorContext context = new ConstructorContext("file.java", "Class","method", List.of("String", "int"), attributes, List.of());
+        ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withAttributes(attributes).withParameters(List.of("String", "int"));
         context.setSnapshotFilePath("snapshot.json");
 
         String result = context.attributesToCsvRow();
@@ -28,16 +28,8 @@ class ConstructorContextTest {
     void toCsvRowOutpusCorrectFormatTest() {
         AttributeContext attr = new AttributeContext("field1", "String", "java.lang.String");
         StackTraceElement element = new StackTraceElement("com.example.MyClass", "myMethod", "MyClass.java", 42);
-
-        ConstructorContext context = new ConstructorContext(
-                "MyClass.java",
-                "com.example.MyClass",
-                "MyClass",
-                List.of("String"),
-                Set.of(attr),
-                List.of(element)
-        );
-        context.setSnapshotFilePath("snapshot.json");
+        
+        ConstructorContext context = new ConstructorContext().withFileName("MyClass.java").withClassName("com.example.MyClass").withMethodName("MyClass").withParameters(List.of("String")).withAttributes(Set.of(attr)).withStackTrace(List.of(element)).withSnapshotFilePath("snapshot.json");
 
         String row = context.toCsvRow();
 

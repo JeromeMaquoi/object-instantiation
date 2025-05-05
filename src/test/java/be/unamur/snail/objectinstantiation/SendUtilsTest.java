@@ -2,34 +2,18 @@ package be.unamur.snail.objectinstantiation;
 
 import be.unamur.snail.register.*;
 import org.junit.jupiter.api.*;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import spoon.compiler.Environment;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
     private static Path tempDir;
-
-    static class DummyClass {
-        private String name;
-        private int value;
-
-        public DummyClass(String name, int value) {
-            this.name = name;
-            this.value = value;
-        }
-    }
 
     @BeforeAll
     static void setUpClass() throws IOException {
@@ -73,7 +57,6 @@ class SendUtilsTest {
         assertEquals("Class", context.getClassName());
         assertEquals("method", context.getMethodName());
         assertEquals(List.of("java.lang.String"), context.getParameters());
-        assertFalse(context.getStackTrace().isEmpty());
     }
 
     @Test

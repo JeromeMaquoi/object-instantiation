@@ -12,14 +12,41 @@ public class ConstructorContext implements CsvWritableContext {
     private List<StackTraceElement> stackTrace;
     private String snapshotFilePath;
 
-    public ConstructorContext(String fileName, String className, String methodName, List<String> parameters, Set<AttributeContext> attributes, List<StackTraceElement> stackTrace) {
+    public ConstructorContext() {}
+
+    public ConstructorContext withFileName(String fileName) {
         this.fileName = fileName;
+        return this;
+    }
+
+    public ConstructorContext withClassName(String className) {
         this.className = className;
+        return this;
+    }
+
+    public ConstructorContext withMethodName(String methodName) {
         this.methodName = methodName;
+        return this;
+    }
+
+    public ConstructorContext withParameters(List<String> parameters) {
         this.parameters = parameters;
+        return this;
+    }
+
+    public ConstructorContext withAttributes(Set<AttributeContext> attributes) {
         this.attributes = attributes;
+        return this;
+    }
+
+    public ConstructorContext withStackTrace(List<StackTraceElement> stackTrace) {
         this.stackTrace = stackTrace;
-        this.snapshotFilePath = "";
+        return this;
+    }
+
+    public ConstructorContext withSnapshotFilePath(String snapshotFilePath) {
+        this.snapshotFilePath = snapshotFilePath;
+        return this;
     }
 
     public String getMethodName() {
