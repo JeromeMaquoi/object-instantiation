@@ -16,7 +16,7 @@ public class SnapshotSerializer {
 
     public static String serializeToJson(Object object, Set<Object> visitedObjects) {
         if (object == null) return "null";
-        if (visitedObjects.contains(object)) return "\"<circular reference>\"";
+        if (containsReference(object, visitedObjects)) return "\"<circular reference>\"";
         visitedObjects.add(object);
 
         Class<?> clazz = object.getClass();
@@ -38,6 +38,17 @@ public class SnapshotSerializer {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    public static boolean containsReference(Object object, Set<Object> visitedObjects) {
+        boolean contains = false;
+        for (Object item : visitedObjects) {
+            if (item == object) {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
     }
 
     public static boolean isPrimitive(Object object) {
