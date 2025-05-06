@@ -14,6 +14,7 @@ import static org.mockito.Mockito.*;
 
 class SendUtilsTest {
     private static Path tempDir;
+    private SendUtils sendUtils;
 
     @BeforeAll
     static void setUpClass() throws IOException {
@@ -27,8 +28,8 @@ class SendUtilsTest {
         when(mockStackTraceHelper.getFilteredStackTrace()).thenReturn(List.of(
                 new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30)
         ));
-        SendUtils.setStackTraceHelper(mockStackTraceHelper);
-        SendUtils.setConstructorContext(null);
+        sendUtils = new SendUtils(mockStackTraceHelper);
+        sendUtils.setConstructorContext(null);
     }
 
     @AfterEach
@@ -49,8 +50,8 @@ class SendUtilsTest {
 
     @Test
     void initConstructorContextStoresCorrectContextTest() {
-        SendUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
-        ConstructorContext context = SendUtils.getConstructorContext();
+        sendUtils.initConstructorContext("file.java", "Class", "method", new ArrayList<>(List.of("java.lang.String")));
+        ConstructorContext context = sendUtils.getConstructorContext();
 
         assertNotNull(context);
         assertEquals("file.java", context.getFileName());
@@ -61,11 +62,11 @@ class SendUtilsTest {
 
     @Test
     void testAddAttributeAddsToConstructorContext() {
-        SendUtils.initConstructorContext("file", "Class", "init", List.of());
+        sendUtils.initConstructorContext("file", "Class", "init", List.of());
 
-        SendUtils.addAttribute("field", "String", "hello");
+        sendUtils.addAttribute("field", "String", "hello");
 
-        ConstructorContext context = SendUtils.getConstructorContext();
+        ConstructorContext context = sendUtils.getConstructorContext();
         assertEquals(1, context.getAttributes().size());
 
         AttributeContext attr = context.getAttributes().iterator().next();
@@ -76,16 +77,19 @@ class SendUtilsTest {
 
     @Test
     void testAddAttributeThrowsIfNotInitialized() {
+        SendUtils utils = new SendUtils();
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            SendUtils.addAttribute("field", "String", "value");
+            utils.addAttribute("field", "String", "value");
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
     }
 
     @Test
     void getSnapshotThrowsIfNotInitialized() {
+        SendUtils utils = new SendUtils();
+        Object object = new Object();
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            SendUtils.getSnapshot(new Object());
+            utils.getSnapshot(object);
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
     }
