@@ -11,21 +11,32 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
-    private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
-    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
-    public static EnvVariables envVariables = new EnvVariables();
-    private static StackTraceHelper stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
-
-    private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
-    private SendUtils() {}
+    private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
+    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
+    public final EnvVariables envVariables;
+    private final StackTraceHelper stackTraceHelper;
 
-    public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        constructorContext = new ConstructorContext().withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
+    private ConstructorContext constructorContext;
+
+    public SendUtils() {
+        this.envVariables = new EnvVariables();
+        this.constructorContext = new ConstructorContext();
+        this.stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
     }
 
-    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
+    public SendUtils(StackTraceHelper stackTraceHelper) {
+        this.envVariables = new EnvVariables();
+        this.constructorContext = new ConstructorContext();
+        this.stackTraceHelper = stackTraceHelper;
+    }
+
+    public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
+        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
+    }
+
+    public void addAttribute(String attributeName, String attributeType, Object actualObject) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
@@ -34,7 +45,7 @@ public class SendUtils {
         constructorContext.addAttribute(attributePayload);
     }
 
-    public static void getSnapshot(Object obj) {
+    public void getSnapshot(Object obj) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
@@ -50,18 +61,18 @@ public class SendUtils {
         }
     }
 
-    public static Path prepareSnapshotFilePath() throws IOException {
+    public Path prepareSnapshotFilePath() throws IOException {
         String fileName = UUID.randomUUID() + ".json";
         Path snapshotDir = Paths.get(envVariables.getEnvVariable("SNAPSHOT_DIR"));
         Files.createDirectories(snapshotDir);
         return snapshotDir.resolve(fileName);
     }
 
-    public static void writeJsonToFile(Path filePath, String json) throws IOException {
+    public void writeJsonToFile(Path filePath, String json) throws IOException {
         Files.writeString(filePath, json);
     }
 
-    public static void writeConstructorContext() {
+    public void writeConstructorContext() {
         ContextWriter<ConstructorContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_CONSTRUCTOR_FILE_PATH"));
 
         try {
@@ -76,21 +87,17 @@ public class SendUtils {
 
 
     // Injector for tests
-    public static void setStackTraceHelper(StackTraceHelper newHelper) {
-        stackTraceHelper = newHelper;
-    }
-
-    public static ConstructorContext getConstructorContext() {
+    public ConstructorContext getConstructorContext() {
         return constructorContext;
     }
 
-    public static void setConstructorContext(ConstructorContext newConstructorContext) {
+    public void setConstructorContext(ConstructorContext newConstructorContext) {
         constructorContext = newConstructorContext;
     }
 
 
 
-    public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
+    public void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
         ContextWriter<MethodContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_METHOD_FILE_PATH"));
@@ -102,7 +109,7 @@ public class SendUtils {
         }
     }
 
-    private static void ensureHeaderWritten(String csvFilePath, String header) throws IOException {
+    private void ensureHeaderWritten(String csvFilePath, String header) throws IOException {
         File csvFile = new File(csvFilePath);
         if (!csvFile.exists()) {
             Files.write(Paths.get(csvFile.toURI()), header.getBytes());
@@ -134,7 +141,7 @@ public class SendUtils {
         return stackTraceSnapshotElementDTO;
     }*/
 
-    private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
+    private StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
         StackTraceDTO stackTraceDTO = new StackTraceDTO();
 //        System.out.println("Stack trace for constructor: " + constructorName);
         for (StackTraceElement element : projectStackTrace) {
@@ -148,16 +155,16 @@ public class SendUtils {
         return stackTraceDTO;
     }
 
-    private static StackTraceElementDTO createStackTraceElementDTO(StackTraceElement stackTraceElement) {
+    private StackTraceElementDTO createStackTraceElementDTO(StackTraceElement stackTraceElement) {
         MethodElementDTO methodElementDTO = createMethodElementDTO(stackTraceElement);
         return new StackTraceElementDTO().withMethod(methodElementDTO).withLineNumber(stackTraceElement.getLineNumber());
     }
 
-    private static MethodElementDTO createMethodElementDTO(StackTraceElement element) {
+    private MethodElementDTO createMethodElementDTO(StackTraceElement element) {
         return new MethodElementDTO().withFileName(element.getFileName()).withClassName(element.getClassName()).withMethodName(getMethodName(element)).isConstructor(isConstructor(element));
     }
 
-    private static String getMethodName(StackTraceElement element) {
+    private String getMethodName(StackTraceElement element) {
         if (element.getMethodName().equals("<init>")) {
             String fullClassName = element.getClassName();
             return fullClassName.substring(fullClassName.lastIndexOf(".") + 1);
@@ -165,7 +172,7 @@ public class SendUtils {
         return element.getMethodName();
     }
 
-    private static boolean isConstructor(StackTraceElement element) {
+    private boolean isConstructor(StackTraceElement element) {
         return element.getMethodName().equals("<init>");
     }
     

@@ -29,7 +29,7 @@ public class Main {
         launcher.getEnvironment().setSourceClasspath(classpaths.toArray(new String[0]));
 
         launcher.addProcessor(new ConstructorInstrumentationProcessor());
-        launcher.addProcessor(new MethodInstrumentationProcessor());
+//        launcher.addProcessor(new MethodInstrumentationProcessor());
         launcher.run();
     }
 }
