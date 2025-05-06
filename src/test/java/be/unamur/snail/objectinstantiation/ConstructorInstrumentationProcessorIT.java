@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ConstructorInstrumentationProcessorTest {
+class ConstructorInstrumentationProcessorIT {
     private Launcher launcher;
 
     @TempDir
