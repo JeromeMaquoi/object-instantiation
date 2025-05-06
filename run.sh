@@ -19,33 +19,38 @@ echo "cp -r ${input_repo_path} ${output_repo_path}"
 cp -r "$input_repo_path" "$output_repo_path"
 
 # Create the .jar of object-instantiation project
-echo "mvn clean package"
-mvn clean package
+echo "mvn clean verify"
+if mvn clean verify; then
+  # Execute the .jar on the analyzed project
+  cd ./target || return
+  echo "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
+  java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path"
 
-# Execute the .jar on the analyzed project
-cd ./target || return
-echo "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
-java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path"
+  # Copy be.unamur.snail.register package to the output folder
+  echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
+  mkdir -p "${output_source_code}/be/unamur/snail/register"
+  echo "cp -r ${REGISTER_PATH} ${output_source_code}/be/unamur/snail/register"
+  cp -r "$REGISTER_PATH" "${output_source_code}/be/unamur/snail/register/"
 
-# Copy be.unamur.snail.register package to the output folder
-echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
-mkdir -p "${output_source_code}/be/unamur/snail/register"
-echo "cp -r ${REGISTER_PATH} ${output_source_code}/be/unamur/snail/register"
-cp -r "$REGISTER_PATH" "${output_source_code}/be/unamur/snail/register/"
+  # Execute tests of the analyzed project within the transformed code
+  cd "$output_repo_path" || return
 
-# Execute tests of the analyzed project within the transformed code
-cd "$output_repo_path" || return
+  if [ "$PROJECT_NAME" == "spring-boot" ]; then
+    export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
+    rm -rf .gradle/
+    echo "./gradlew clean spring-boot-project:spring-boot:test"
+  #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
+  #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.logging.log4j2.ColorConverterTests
+    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties
+  fi
 
-if [ "$PROJECT_NAME" == "spring-boot" ]; then
-  export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
-  rm -rf .gradle/
-  echo "./gradlew clean spring-boot-project:spring-boot:test"
-  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
+  if [ "$PROJECT_NAME" == "spoon" ]; then
+    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+    mvn clean test
+  fi
+
+  # TODO handle other projects execution
+
+else
+  echo "mvn clean verify has failed"
 fi
-
-if [ "$PROJECT_NAME" == "spoon" ]; then
-  export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-  mvn clean test
-fi
-
-# TODO handle other projects execution
