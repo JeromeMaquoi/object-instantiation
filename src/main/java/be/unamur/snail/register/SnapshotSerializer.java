@@ -43,7 +43,7 @@ public class SnapshotSerializer {
     public static boolean containsReference(Object object, Set<Object> visitedObjects) {
         boolean contains = false;
         for (Object item : visitedObjects) {
-            if (item == object) {
+            if (item == object && ! (object instanceof Boolean) && ! (object instanceof String)) {
                 contains = true;
                 break;
             }

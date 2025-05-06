@@ -143,4 +143,18 @@ class SnapshotSerializerTest {
                 .toList();
         assertThat(fieldNames).isEmpty();
     }
+
+    @Test
+    void containsReferenceWithBooleanTest() {
+        visitedObjects.add(true);
+
+        assertFalse(SnapshotSerializer.containsReference(true, visitedObjects));
+    }
+
+    @Test
+    void containsReferenceWithStringTest() {
+        String str1 = "test";
+        visitedObjects.add(str1);
+        assertFalse(SnapshotSerializer.containsReference("test", visitedObjects));
+    }
 }
