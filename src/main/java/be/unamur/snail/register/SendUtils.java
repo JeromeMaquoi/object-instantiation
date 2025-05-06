@@ -11,23 +11,24 @@ import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
+    private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
+
     private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
     private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
     public final EnvVariables envVariables;
     private final StackTraceHelper stackTraceHelper;
 
     private ConstructorContext constructorContext;
-    private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     public SendUtils() {
-        envVariables = new EnvVariables();
-        constructorContext = new ConstructorContext();
-        stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+        this.envVariables = new EnvVariables();
+        this.constructorContext = new ConstructorContext();
+        this.stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
     }
 
     public SendUtils(StackTraceHelper stackTraceHelper) {
-        envVariables = new EnvVariables();
-        constructorContext = new ConstructorContext();
+        this.envVariables = new EnvVariables();
+        this.constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
     }
 
