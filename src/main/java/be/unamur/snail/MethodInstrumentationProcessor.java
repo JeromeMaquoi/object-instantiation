@@ -2,7 +2,6 @@ package be.unamur.snail;
 
 import spoon.processing.AbstractProcessor;
 import spoon.reflect.code.*;
-import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.declaration.CtMethod;
 import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.factory.Factory;
@@ -46,7 +45,7 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtMethod<?
                 factory.Type().voidPrimitiveType(),
                 "setMethodContext"
         );
-        CtExpression<ArrayList> parameterListLiteral = createParameterListLiteral(methodParameters);
+        CtExpression<ArrayList> parameterListLiteral = createParameterListLiteral(factory, methodParameters);
 
         return factory.Code().createInvocation(
                 factory.Code().createTypeAccess(registerUtilsType),
@@ -58,9 +57,7 @@ public class MethodInstrumentationProcessor extends AbstractProcessor<CtMethod<?
         );
     }
 
-    public CtExpression<ArrayList> createParameterListLiteral(List<String> methodParameters) {
-        Factory factory = getFactory();
-
+    public CtExpression<ArrayList> createParameterListLiteral(Factory factory, List<String> methodParameters) {
         /*CtTypeReference<List> listTypeRef = factory.Type().createReference(List.class);
         CtTypeReference<String> stringTypeRef = factory.Type().createReference(String.class);
         listTypeRef.addActualTypeArgument(stringTypeRef);*/

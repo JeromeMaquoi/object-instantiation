@@ -8,7 +8,7 @@ public class MethodElementDTO {
     private String methodName;
     private List<String> parameters;
     private boolean isConstructor;
-    private Set<AttributeEntityDTO> constructorAttributes = new HashSet<>();
+    private Set<AttributeContext> constructorAttributes = new HashSet<>();
 
     public String getFileName() {
         return fileName;
@@ -75,20 +75,20 @@ public class MethodElementDTO {
         return this;
     }
 
-    public Set<AttributeEntityDTO> getConstructorAttributes() {
+    public Set<AttributeContext> getConstructorAttributes() {
         return constructorAttributes;
     }
 
-    public void setConstructorAttributes(Set<AttributeEntityDTO> constructorAttributes) {
+    public void setConstructorAttributes(Set<AttributeContext> constructorAttributes) {
         this.constructorAttributes = constructorAttributes;
     }
 
-    public MethodElementDTO withAttributes(Set<AttributeEntityDTO> attributes) {
+    public MethodElementDTO withAttributes(Set<AttributeContext> attributes) {
         this.constructorAttributes = attributes;
         return this;
     }
 
-    public void addAttribute(AttributeEntityDTO attribute) {
+    public void addAttribute(AttributeContext attribute) {
         this.constructorAttributes.add(attribute);
     }
 

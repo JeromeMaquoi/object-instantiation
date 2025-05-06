@@ -30,7 +30,7 @@ class ConstructorInstrumentationProcessorTest {
     Path outputPath;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         inputPath = Paths.get("src/test/resources/test-inputs/");
         outputPath = tempDir.resolve("output");
 
@@ -58,16 +58,16 @@ class ConstructorInstrumentationProcessorTest {
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorContext"))
                 .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
+        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
-        long sendInvocationCount = constructor.getBody()
+        long writeConstructorContextInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("writeConstructorContext"))
                 .count();
-        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
+        assertEquals(1, writeConstructorContextInvocationCount, "Constructor should contain one 'writeConstructorContext' invocation");
 
         long addAttributeInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
@@ -75,6 +75,13 @@ class ConstructorInstrumentationProcessorTest {
                 .filter(inv -> inv.getExecutable().getSimpleName().equals("addAttribute"))
                 .count();
         assertEquals(2, addAttributeInvocationCount, "Constructor should contain 2 'addAttribute' invocations");
+
+        long getSnapshotInvocationCount = constructor.getBody()
+                .getElements(new TypeFilter<>(CtInvocation.class))
+                .stream()
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("getSnapshot"))
+                .count();
+        assertEquals(1, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
@@ -97,16 +104,16 @@ class ConstructorInstrumentationProcessorTest {
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorEntityDTO"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("initConstructorContext"))
                 .count();
-        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorEntityDTO' invocation");
+        assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
-        long sendInvocationCount = constructor.getBody()
+        long writeConstructorContextInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("writeConstructorContext"))
                 .count();
-        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
+        assertEquals(1, writeConstructorContextInvocationCount, "Constructor should contain one 'writeConstructorContext' invocation");
 
         long addAttributeInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
@@ -114,6 +121,13 @@ class ConstructorInstrumentationProcessorTest {
                 .filter(inv -> inv.getExecutable().getSimpleName().equals("addAttribute"))
                 .count();
         assertEquals(0, addAttributeInvocationCount, "Constructor without assignments should not contain 'addAttribute' invocations");
+
+        long getSnapshotInvocationCount = constructor.getBody()
+                .getElements(new TypeFilter<>(CtInvocation.class))
+                .stream()
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("getSnapshot"))
+                .count();
+        assertEquals(1, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);

@@ -1,11 +1,11 @@
 package be.unamur.snail.register;
 
-public class AttributeEntityDTO {
-    private String name;
-    private String type;
-    private String actualType;
+public class AttributeContext {
+    private final String name;
+    private final String type;
+    private final String actualType;
 
-    public AttributeEntityDTO(String name, String type, String actualType) {
+    public AttributeContext(String name, String type, String actualType) {
         this.name = name;
         this.type = type;
         this.actualType = actualType;
@@ -21,6 +21,10 @@ public class AttributeEntityDTO {
 
     public String getActualType() {
         return actualType;
+    }
+
+    public String toCsvRow() {
+        return String.format("[%s,%s]", type, actualType);
     }
 
     @Override

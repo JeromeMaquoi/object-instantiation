@@ -1,72 +1,111 @@
 package be.unamur.snail.register;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class SendUtils {
-    private static String apiUrl = System.getenv("API_URL");
-    private static String PROJECT_PACKAGE_PREFIX = System.getenv("PROJECT_PACKAGE_PREFIX");
-    private static String CSV_HEADER = "file,class,method,stacktrace\n";
-    private static MethodContextWriter writer = new MethodContextWriter(System.getenv("CSV_FILE_PATH"));
-    private static final StackTraceHelper stackTraceHelper = new StackTraceHelper(System.getenv("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+    private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
+    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
+    public static EnvVariables envVariables = new EnvVariables();
+    private static StackTraceHelper stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
 
-    private static ConstructorEntityDTO constructorEntityDTO;
+    private static ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
 
-    public static String getApiURL() {
-        return apiUrl;
+    public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
+        constructorContext = new ConstructorContext().withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
     }
 
-    public static void setApiURL(String apiURL) {
-        apiUrl = apiURL;
+    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
+        if (constructorContext == null || constructorContext.isEmpty()) {
+            throw new IllegalStateException("ConstructorContext is not initialized");
+        }
+        String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
+        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
+        constructorContext.addAttribute(attributePayload);
     }
 
-    public static void setProjectPackagePrefix(String projectPackagePrefix) {
-        PROJECT_PACKAGE_PREFIX = projectPackagePrefix;
+    public static void getSnapshot(Object obj) {
+        if (constructorContext == null || constructorContext.isEmpty()) {
+            throw new IllegalStateException("ConstructorContext is not initialized");
+        }
+        try {
+            List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+            constructorContext = constructorContext.withStackTrace(stackTrace);
+            Path filePath = prepareSnapshotFilePath();
+            String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
+            writeJsonToFile(filePath, json);
+            constructorContext.setSnapshotFilePath(filePath.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    public static void setWriter(MethodContextWriter customWriter) {
-        writer = customWriter;
+    public static Path prepareSnapshotFilePath() throws IOException {
+        String fileName = UUID.randomUUID() + ".json";
+        Path snapshotDir = Paths.get(envVariables.getEnvVariable("SNAPSHOT_DIR"));
+        Files.createDirectories(snapshotDir);
+        return snapshotDir.resolve(fileName);
     }
 
-    public static ConstructorEntityDTO getConstructorEntityDTO() {
-        return constructorEntityDTO;
+    public static void writeJsonToFile(Path filePath, String json) throws IOException {
+        Files.writeString(filePath, json);
     }
 
-    public static void initConstructorEntityDTO(String signature, String className, String fileName) {
-        constructorEntityDTO = new ConstructorEntityDTO();
-        constructorEntityDTO.setSignature(signature);
-        constructorEntityDTO.setClassName(className);
-        constructorEntityDTO.setFileName(fileName);
+    public static void writeConstructorContext() {
+        ContextWriter<ConstructorContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_CONSTRUCTOR_FILE_PATH"));
+
+        try {
+            ensureHeaderWritten(envVariables.getEnvVariable("CSV_CONSTRUCTOR_FILE_PATH"), CSV_HEADER_CONSTRUCTOR);
+            writer.writeIfNotExists(constructorContext);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
+
+
+
+
+    // Injector for tests
+    public static void setStackTraceHelper(StackTraceHelper newHelper) {
+        stackTraceHelper = newHelper;
+    }
+
+    public static ConstructorContext getConstructorContext() {
+        return constructorContext;
+    }
+
+    public static void setConstructorContext(ConstructorContext newConstructorContext) {
+        constructorContext = newConstructorContext;
+    }
+
+
 
     public static void setMethodContext(String fileName, String className, String methodName, List<String> parameters) {
         List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
         MethodContext context = new MethodContext(fileName, className, methodName, parameters, stackTrace);
+        ContextWriter<MethodContext> writer = new ContextWriter<>(envVariables.getEnvVariable("CSV_METHOD_FILE_PATH"));
         try {
-            ensureHeaderWritten();
+            ensureHeaderWritten(envVariables.getEnvVariable("CSV_METHOD_FILE_PATH"), CSV_HEADER_METHOD);
             writer.writeIfNotExists(context);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void ensureHeaderWritten() throws IOException {
-        File csvFile = new File(System.getenv("CSV_FILE_PATH"));
+    private static void ensureHeaderWritten(String csvFilePath, String header) throws IOException {
+        File csvFile = new File(csvFilePath);
         if (!csvFile.exists()) {
-            Files.write(Paths.get(csvFile.toURI()), CSV_HEADER.getBytes());
+            Files.write(Paths.get(csvFile.toURI()), header.getBytes());
         }
     }
 
@@ -94,19 +133,6 @@ public class SendUtils {
 
         return stackTraceSnapshotElementDTO;
     }*/
-
-    public static void setCallerContext(String constructorName, Object obj) {
-        /*List<StackTraceElement> projectStackTrace = getStackTrace();
-
-        StackTraceDTO stackTraceDTO = createStackTraceDTO(projectStackTrace);
-//        System.out.println("\n");
-//        System.out.println(stackTraceDTO);
-//        System.out.println("\n");
-
-        printFields(obj, 0);
-
-//        System.out.println("\n\n");*/
-    }
 
     private static StackTraceDTO createStackTraceDTO(List<StackTraceElement> projectStackTrace) {
         StackTraceDTO stackTraceDTO = new StackTraceDTO();
@@ -144,7 +170,7 @@ public class SendUtils {
     }
     
 
-    private static void printFields(Object obj, int depth) {
+    /*private static void printFields(Object obj, int depth) {
         if (obj == null) {
             log.warn("Object is null.");
             return;
@@ -192,30 +218,5 @@ public class SendUtils {
                 System.out.printf("    Unable to access field: %s%n", field.getName());
             }
         }
-    }
-
-    public static void addAttribute(String attributeName, String attributeType, Object actualObject) {
-        assert !constructorEntityDTO.isEmpty();
-        String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
-        AttributeEntityDTO attributePayload = new AttributeEntityDTO(attributeName, attributeType, actualType);
-        constructorEntityDTO.addAttributeEntity(attributePayload);
-    }
-
-    public static void send() {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            String json = objectMapper.writeValueAsString(constructorEntityDTO);
-//            HttpClientService.post(apiUrl, json);
-//        } catch (InvalidPropertiesFormatException e) {
-//            log.error("Error sending JSON to API : {}", e.getMessage());
-        } catch (JsonProcessingException e) {
-            log.error("Error serializing constructorEntityDTO to JSON: {}", e.getMessage());
-        } catch (IOException e) {
-            log.error("IOException: {}", e.getMessage());
-//        } catch (InterruptedException e) {
-//            log.error("InterruptedException: {}", e.getMessage());
-        } catch (RuntimeException e) {
-            log.error("RuntimeException: {}", e.getMessage());
-        }
-    }
+    }*/
 }
