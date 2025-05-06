@@ -7,6 +7,7 @@ import spoon.reflect.declaration.CtParameter;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.reference.CtExecutableReference;
 import spoon.reflect.reference.CtTypeReference;
+import spoon.reflect.reference.CtVariableReference;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.ArrayList;
@@ -19,34 +20,37 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
     @Override
     public void process(CtConstructor<?> constructor) {
         if (constructor.getBody() == null) return;
+        Factory factory = getFactory();
 
         String fileName = getFileName(constructor);
         String className = constructor.getDeclaringType().getQualifiedName();
         String constructorName = constructor.getDeclaringType().getSimpleName();
         List<String> constructorParameters = createConstructorParameterList(constructor);
 
-        CtInvocation<?> initConstructorInvocation = createInitConstructorContextInvocation(fileName, className, constructorName, constructorParameters);
+        CtLocalVariable<?> utilsVariable = createSendUtilsInitializationInvocation();
+        CtVariableReference<?> utilsVarRef = utilsVariable.getReference();
+        CtExpression<?> utilsAccess = factory.Code().createVariableRead(utilsVarRef, false);
+
+        CtInvocation<?> initConstructorInvocation = createInitConstructorContextInvocation(utilsAccess, fileName, className, constructorName, constructorParameters);
         constructor.getBody().insertBegin(initConstructorInvocation);
 
         // "utils" variable initialization
-        CtLocalVariable<?> utilsVariable = createSendUtilsInitializationInvocation();
         constructor.getBody().insertBegin(utilsVariable);
 
-        Factory factory = getFactory();
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, fieldName, fieldType, fieldAccess);
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess);
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
 
-        CtInvocation<?> getSnapshotInvocation = createGetSnapshotInvocation(factory, constructor);
+        CtInvocation<?> getSnapshotInvocation = createGetSnapshotInvocation(factory, utilsAccess, constructor);
         constructor.getBody().insertEnd(getSnapshotInvocation);
 
-        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory);
+        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
         constructor.getBody().addStatement(writeConstructorContextInvocation);
     }
 
@@ -73,7 +77,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
     }
 
-    private CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtConstructor<?> constructor) {
+    private CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -84,13 +88,13 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
 
         return factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
+                target,
                 getSnapshotMethod,
                 thisAccess
         );
     }
 
-    private CtInvocation<?> createWriteConstructorContextInvocation(Factory factory) {
+    private CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -99,25 +103,27 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
 
         return factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
+                target,
                 writeConstructorContextMethod
         );
     }
 
 
 
-    private CtInvocation<?> createInitConstructorContextInvocation(String fileName, String className, String constructorName, List<String> constructorParameters) {
+    private CtInvocation<?> createInitConstructorContextInvocation(CtExpression<?> target, String fileName, String className, String constructorName, List<String> constructorParameters) {
         Factory factory = getFactory();
-        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
-        CtExecutableReference<?> initConstructorMethod = factory.Executable().createReference(
-                registerUtilsType,
+        CtTypeReference<?> sendUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> initConstructorMethodRef = factory.Executable().createReference(
+                sendUtilsType,
                 factory.Type().voidPrimitiveType(),
                 "initConstructorContext"
         );
         CtExpression<ArrayList> parameterListLiteral = new MethodInstrumentationProcessor().createParameterListLiteral(factory, constructorParameters);
+
+
         return factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
-                initConstructorMethod,
+                target,
+                initConstructorMethodRef,
                 factory.Code().createLiteral(fileName),
                 factory.Code().createLiteral(className),
                 factory.Code().createLiteral(constructorName),
@@ -125,7 +131,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
+    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
@@ -134,7 +140,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 "addAttribute"
         );
         return factory.Code().createInvocation(
-                factory.Code().createTypeAccess(registerUtilsType),
+                target,
                 addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType),
