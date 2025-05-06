@@ -54,7 +54,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         constructor.getBody().addStatement(writeConstructorContextInvocation);
     }
 
-    private String getFileName(CtConstructor<?> constructor) {
+    public String getFileName(CtConstructor<?> constructor) {
         String fileName = "Unknown File";
         if (constructor.getPosition() != null && constructor.getPosition().getFile() != null) {
             fileName = constructor.getPosition().getFile().getPath();
@@ -62,7 +62,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return fileName;
     }
 
-    private List<String> createConstructorParameterList(CtConstructor<?> constructor) {
+    public List<String> createConstructorParameterList(CtConstructor<?> constructor) {
         List<String> constructorParameters = new ArrayList<>();
         for (CtParameter<?> parameter : constructor.getParameters()) {
             constructorParameters.add(parameter.getType().getQualifiedName());
@@ -70,14 +70,14 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return constructorParameters;
     }
 
-    private CtLocalVariable<?> createSendUtilsInitializationInvocation() {
+    public CtLocalVariable<?> createSendUtilsInitializationInvocation() {
         Factory factory = getFactory();
         CtTypeReference<?> utilsType = factory.Type().createReference(PKG);
         CtConstructorCall constructorCall = factory.Code().createConstructorCall(utilsType);
         return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
     }
 
-    private CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
+    public CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -94,7 +94,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
+    public CtInvocation<?> createWriteConstructorContextInvocation(Factory factory, CtExpression<?> target) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> writeConstructorContextMethod = factory.Executable().createReference(
                 registerUtilsType,
@@ -110,7 +110,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
 
 
-    private CtInvocation<?> createInitConstructorContextInvocation(CtExpression<?> target, String fileName, String className, String constructorName, List<String> constructorParameters) {
+    public CtInvocation<?> createInitConstructorContextInvocation(CtExpression<?> target, String fileName, String className, String constructorName, List<String> constructorParameters) {
         Factory factory = getFactory();
         CtTypeReference<?> sendUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> initConstructorMethodRef = factory.Executable().createReference(
@@ -131,7 +131,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    private CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
+    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
