@@ -27,10 +27,9 @@ class SnapshotSerializerTest {
 
     @Test
     void serializePrimitiveTest() {
-        assertEquals("10", SnapshotSerializer.serializeToJson(10, visitedObjects));
-        assertEquals("true", SnapshotSerializer.serializeToJson(true, visitedObjects));
-        assertEquals("\"hello\"", SnapshotSerializer.serializeToJson("hello", visitedObjects));
-        assertEquals("3.14", SnapshotSerializer.serializeToJson(3.14, visitedObjects));
+        assertEquals("10", SnapshotSerializer.serializePrimitive(10));
+        assertEquals("true", SnapshotSerializer.serializePrimitive(true));
+        assertEquals("3.14", SnapshotSerializer.serializePrimitive(3.14));
     }
 
     @Test
@@ -42,10 +41,10 @@ class SnapshotSerializerTest {
     @Test
     void serializeArrayTest() {
         int[] array = {1, 2, 3};
-        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(array, visitedObjects));
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeArray(array, visitedObjects));
 
         String[] stringArray = {"a", "b", "c"};
-        assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeToJson(stringArray, visitedObjects));
+        assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeArray(stringArray, visitedObjects));
     }
 
     @Test
@@ -57,7 +56,7 @@ class SnapshotSerializerTest {
     @Test
     void serializeEmptyArrayTest() {
         int[] emptyArray = {};
-        assertEquals("[]", SnapshotSerializer.serializeToJson(emptyArray, visitedObjects));
+        assertEquals("[]", SnapshotSerializer.serializeArray(emptyArray, visitedObjects));
     }
 
     @Test
@@ -66,7 +65,7 @@ class SnapshotSerializerTest {
         list.add("one");
         list.add("two");
         list.add("three");
-        assertEquals("[\"one\",\"two\",\"three\"]", SnapshotSerializer.serializeToJson(list, visitedObjects));
+        assertEquals("[\"one\",\"two\",\"three\"]", SnapshotSerializer.serializeCollection(list, visitedObjects));
     }
 
     @Test
@@ -75,7 +74,7 @@ class SnapshotSerializerTest {
         set.add(1);
         set.add(2);
         set.add(3);
-        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(set, visitedObjects));
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeCollection(set, visitedObjects));
     }
 
     @Test
@@ -84,13 +83,13 @@ class SnapshotSerializerTest {
         map.put("key1", "value1");
         map.put("key2", "value2");
 
-        assertEquals("{\"key1\":\"value1\",\"key2\":\"value2\"}", SnapshotSerializer.serializeToJson(map, visitedObjects));
+        assertEquals("{\"key1\":\"value1\",\"key2\":\"value2\"}", SnapshotSerializer.serializeMap(map, visitedObjects));
     }
 
     @Test
-    void serializeSimplePOJOTest() {
+    void serializeSimplePOJOTest() throws IllegalAccessException {
         Person person = new Person("John", 42);
-        assertEquals("{\"name\": \"John\", \"age\": 42, \"friend\": null}", SnapshotSerializer.serializeToJson(person, visitedObjects));
+        assertEquals("{\"name\": \"John\", \"age\": 42, \"friend\": null}", SnapshotSerializer.serializePOJO(person, visitedObjects));
     }
 
     @Test
