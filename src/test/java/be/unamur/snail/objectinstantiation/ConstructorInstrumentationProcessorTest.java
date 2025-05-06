@@ -7,6 +7,7 @@ import org.junit.jupiter.api.io.TempDir;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.code.CtInvocation;
+import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
 import spoon.reflect.visitor.filter.TypeFilter;
@@ -55,6 +56,14 @@ class ConstructorInstrumentationProcessorTest {
                 .orElseThrow(() -> new AssertionError("Class "+className+" not found in the model"));
         CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
 
+        boolean containsSendUtils = constructor.getBody()
+                .getStatements()
+                .stream()
+                .filter(stm -> stm instanceof CtLocalVariable<?>)
+                .map(stmt -> (CtLocalVariable<?>) stmt)
+                .anyMatch(var -> var.getSimpleName().equals("utils") && var.getType().getQualifiedName().equals("be.unamur.snail.register.SendUtils"));
+        assertTrue(containsSendUtils, "Constructor should contain 'SendUtils utils = new SendUtils();'");
+
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
@@ -100,6 +109,14 @@ class ConstructorInstrumentationProcessorTest {
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("Class TestEmptyConstructorClass not found in the model"));
         CtConstructor<?> constructor = clazz.getConstructors().iterator().next();
+
+        boolean containsSendUtils = constructor.getBody()
+                .getStatements()
+                .stream()
+                .filter(stm -> stm instanceof CtLocalVariable<?>)
+                .map(stmt -> (CtLocalVariable<?>) stmt)
+                .anyMatch(var -> var.getSimpleName().equals("utils") && var.getType().getQualifiedName().equals("be.unamur.snail.register.SendUtils"));
+        assertTrue(containsSendUtils, "Constructor should contain 'SendUtils utils = new SendUtils();'");
 
         long initConstructorInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))

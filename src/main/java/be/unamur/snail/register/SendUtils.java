@@ -13,24 +13,26 @@ import java.util.*;
 public class SendUtils {
     private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
     private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
-    public static EnvVariables envVariables = new EnvVariables();
-    private StackTraceHelper stackTraceHelper;
+    public final EnvVariables envVariables;
+    private final StackTraceHelper stackTraceHelper;
 
     private ConstructorContext constructorContext;
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     public SendUtils() {
+        envVariables = new EnvVariables();
         constructorContext = new ConstructorContext();
-        this.stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
+        stackTraceHelper = new StackTraceHelper(envVariables.getEnvVariable("PROJECT_PACKAGE_PREFIX"), new DefaultStackTraceProvider());
     }
 
     public SendUtils(StackTraceHelper stackTraceHelper) {
+        envVariables = new EnvVariables();
         constructorContext = new ConstructorContext();
         this.stackTraceHelper = stackTraceHelper;
     }
 
     public void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
-        constructorContext = new ConstructorContext().withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
+        constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
     }
 
     public void addAttribute(String attributeName, String attributeType, Object actualObject) {

@@ -28,6 +28,10 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         CtInvocation<?> initConstructorInvocation = createInitConstructorContextInvocation(fileName, className, constructorName, constructorParameters);
         constructor.getBody().insertBegin(initConstructorInvocation);
 
+        // "utils" variable initialization
+        CtLocalVariable<?> utilsVariable = createSendUtilsInitializationInvocation();
+        constructor.getBody().insertBegin(utilsVariable);
+
         Factory factory = getFactory();
         for (CtAssignment<?, ?> assignment : constructor.getBody().getElements(new TypeFilter<>(CtAssignment.class))) {
             if (assignment.getAssigned() instanceof CtFieldAccess<?> fieldAccess && (fieldAccess.getTarget() instanceof CtThisAccess<?> || fieldAccess.getTarget() == null)) {
@@ -60,6 +64,13 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             constructorParameters.add(parameter.getType().getQualifiedName());
         }
         return constructorParameters;
+    }
+
+    private CtLocalVariable<?> createSendUtilsInitializationInvocation() {
+        Factory factory = getFactory();
+        CtTypeReference<?> utilsType = factory.Type().createReference(PKG);
+        CtConstructorCall constructorCall = factory.Code().createConstructorCall(utilsType);
+        return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
     }
 
     private CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtConstructor<?> constructor) {

@@ -29,7 +29,6 @@ class SendUtilsTest {
                 new StackTraceElement("org.springframework.boot.ApplicationEnvironmentTests", "createEnvironment", "ApplicationEnvironmentTests.java", 30)
         ));
         sendUtils = new SendUtils(mockStackTraceHelper);
-        sendUtils.setConstructorContext(null);
     }
 
     @AfterEach
