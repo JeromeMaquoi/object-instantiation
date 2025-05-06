@@ -5,8 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -22,20 +20,6 @@ public class SendUtils {
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private SendUtils() {}
-
-    // Injector for tests
-    public static void setStackTraceHelper(StackTraceHelper newHelper) {
-        stackTraceHelper = newHelper;
-    }
-
-
-    public static ConstructorContext getConstructorContext() {
-        return constructorContext;
-    }
-
-    public static void setConstructorContext(ConstructorContext newConstructorContext) {
-        constructorContext = newConstructorContext;
-    }
 
     public static void initConstructorContext(String fileName, String className, String methodName, List<String> parameters) {
         constructorContext = new ConstructorContext().withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
@@ -90,6 +74,19 @@ public class SendUtils {
 
 
 
+
+    // Injector for tests
+    public static void setStackTraceHelper(StackTraceHelper newHelper) {
+        stackTraceHelper = newHelper;
+    }
+
+    public static ConstructorContext getConstructorContext() {
+        return constructorContext;
+    }
+
+    public static void setConstructorContext(ConstructorContext newConstructorContext) {
+        constructorContext = newConstructorContext;
+    }
 
 
 
