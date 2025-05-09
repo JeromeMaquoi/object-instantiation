@@ -1,5 +1,12 @@
 package be.unamur.snail.register;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,11 +15,31 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SnapshotSerializer {
     private static final Logger log = LoggerFactory.getLogger(SnapshotSerializer.class);
 
     private SnapshotSerializer() {}
+
+    public static String serializeToJson(Object object) {
+//        System.out.println("\nobject: " + object);
+        ObjectMapper mapper = new ObjectMapper();
+//        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        mapper.enable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
+        mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+
+        String result = null;
+        try {
+            result = mapper.writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+//        System.out.println("result: " + result);
+        return result;
+    }
 
     public static String serializeToJson(Object object, Set<Object> visitedObjects) {
         if (object == null) return "null";
@@ -64,6 +91,17 @@ public class SnapshotSerializer {
     }
 
     public static String serializeString(Object object) {
+//        Pattern pattern = Pattern.compile("\\\\u[0-9a-fA-F]{4}");
+//        Matcher matcher = pattern.matcher(object.toString());
+//        StringBuilder builder = new StringBuilder();
+//        while (matcher.find()) {
+//            String unicodeSequence = matcher.group();
+//            char unicodeChar = (char) Integer.parseInt(unicodeSequence.substring(2), 16);
+//            matcher.appendReplacement(builder, Character.toString(unicodeChar));
+//        }
+//        matcher.appendTail(builder);
+//        return builder.toString();
+
         String raw = object.toString()
                 .replace("\\", "\\\\")
                 .replace("\"", "\\\"");

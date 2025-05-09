@@ -27,36 +27,41 @@ class SnapshotSerializerTest {
 
     @Test
     void serializePrimitiveTest() {
-        assertEquals("10", SnapshotSerializer.serializePrimitive(10));
-        assertEquals("true", SnapshotSerializer.serializePrimitive(true));
-        assertEquals("3.14", SnapshotSerializer.serializePrimitive(3.14));
+        assertEquals("10", SnapshotSerializer.serializeToJson(10));
+        assertEquals("true", SnapshotSerializer.serializeToJson(true));
+        assertEquals("3.14", SnapshotSerializer.serializeToJson(3.14));
     }
 
     @Test
     void serializeSpecialCharactersTest() {
-        assertEquals("\"\\\\\"", SnapshotSerializer.serializeString('\\'));
-        assertEquals("\"\\\"${\\\"\"", SnapshotSerializer.serializeString("\"${\""));
+        assertEquals("\"\\\\\"", SnapshotSerializer.serializeToJson('\\'));
+        assertEquals("\"\\\"${\\\"\"", SnapshotSerializer.serializeToJson("\"${\""));
     }
+
+    /*@Test
+    void serializeCharacterTest() {
+        assertEquals("", SnapshotSerializer.serializeToJson('\u0000'));
+    }*/
 
     @Test
     void serializeArrayTest() {
         int[] array = {1, 2, 3};
-        assertEquals("[1,2,3]", SnapshotSerializer.serializeArray(array, visitedObjects));
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(array));
 
         String[] stringArray = {"a", "b", "c"};
-        assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeArray(stringArray, visitedObjects));
+        assertEquals("[\"a\",\"b\",\"c\"]", SnapshotSerializer.serializeToJson(stringArray));
     }
 
     @Test
     void serializeArrayWithSpecialCharactersTest() {
         String[] array = {"\\\"", "\\", "-"};
-        assertEquals("[\"\\\\\\\"\",\"\\\\\",\"-\"]", SnapshotSerializer.serializeArray(array, visitedObjects));
+        assertEquals("[\"\\\\\\\"\",\"\\\\\",\"-\"]", SnapshotSerializer.serializeToJson(array));
     }
 
     @Test
     void serializeEmptyArrayTest() {
         int[] emptyArray = {};
-        assertEquals("[]", SnapshotSerializer.serializeArray(emptyArray, visitedObjects));
+        assertEquals("[]", SnapshotSerializer.serializeToJson(emptyArray));
     }
 
     @Test
@@ -65,7 +70,7 @@ class SnapshotSerializerTest {
         list.add("one");
         list.add("two");
         list.add("three");
-        assertEquals("[\"one\",\"two\",\"three\"]", SnapshotSerializer.serializeCollection(list, visitedObjects));
+        assertEquals("[\"one\",\"two\",\"three\"]", SnapshotSerializer.serializeToJson(list));
     }
 
     @Test
@@ -74,7 +79,7 @@ class SnapshotSerializerTest {
         set.add(1);
         set.add(2);
         set.add(3);
-        assertEquals("[1,2,3]", SnapshotSerializer.serializeCollection(set, visitedObjects));
+        assertEquals("[1,2,3]", SnapshotSerializer.serializeToJson(set));
     }
 
     @Test
@@ -83,13 +88,13 @@ class SnapshotSerializerTest {
         map.put("key1", "value1");
         map.put("key2", "value2");
 
-        assertEquals("{\"key1\":\"value1\",\"key2\":\"value2\"}", SnapshotSerializer.serializeMap(map, visitedObjects));
+        assertEquals("{\"key1\":\"value1\",\"key2\":\"value2\"}", SnapshotSerializer.serializeToJson(map));
     }
 
     @Test
-    void serializeSimplePOJOTest() throws IllegalAccessException {
+    void serializeSimplePOJOTest() {
         Person person = new Person("John", 42);
-        assertEquals("{\"name\": \"John\", \"age\": 42, \"friend\": null}", SnapshotSerializer.serializePOJO(person, visitedObjects));
+        assertEquals("{\"name\":\"John\",\"age\":42,\"friend\":null}", SnapshotSerializer.serializeToJson(person));
     }
 
     @Test
@@ -156,5 +161,20 @@ class SnapshotSerializerTest {
         String str1 = "test";
         visitedObjects.add(str1);
         assertFalse(SnapshotSerializer.containsReference("test", visitedObjects));
+    }
+
+    @Test
+    void serializeComplicateEnumTest() {
+        EnumComplicate testEnumComplicate = EnumComplicate.KILOMETERS;
+        assertEquals("\"KILOMETERS\"", SnapshotSerializer.serializeToJson(testEnumComplicate));
+    }
+
+    @Test
+    void serializeComplicateEnumInitializedInAnotherClassTest() {
+        SampleEnumObject obj = new SampleEnumObject("name", EnumComplicate.KILOMETERS);
+        assertDoesNotThrow(() -> {
+            String json = SnapshotSerializer.serializeToJson(obj);
+            assertTrue(json.contains("KILOMETERS"));
+        });
     }
 }

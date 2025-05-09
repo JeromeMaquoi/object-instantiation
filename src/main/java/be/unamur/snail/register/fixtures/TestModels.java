@@ -40,4 +40,35 @@ public class TestModels {
 
         public static class NestedClassWithoutField {}
     }
+
+    public enum EnumComplicate implements EnumInterface {
+        KILOMETERS("km"),
+        MILE("miles");
+
+        private final String unit;
+
+        EnumComplicate(String unit) {
+            this.unit = unit;
+        }
+
+        @Override
+        public String toString() {
+            return this.unit;
+        }
+    }
+
+    public interface EnumInterface {
+        @Override
+        String toString();
+    }
+
+    public static class SampleEnumObject {
+        public String name;
+        public EnumInterface enumInterface;
+
+        public SampleEnumObject(String name, EnumInterface enumInterface) {
+            this.name = name;
+            this.enumInterface = enumInterface;
+        }
+    }
 }

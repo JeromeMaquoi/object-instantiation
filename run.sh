@@ -41,7 +41,7 @@ if mvn clean verify; then
     echo "./gradlew clean spring-boot-project:spring-boot:test"
   #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
   #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.logging.log4j2.ColorConverterTests
-    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties
+    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties -Djava.class.path="build/classes/java/main:build/classes/java/test:/jackson-core-2.2.3.jar"
   fi
 
   if [ "$PROJECT_NAME" == "spoon" ]; then

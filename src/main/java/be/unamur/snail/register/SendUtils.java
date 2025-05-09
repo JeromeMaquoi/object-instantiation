@@ -53,7 +53,7 @@ public class SendUtils {
             List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
             constructorContext = constructorContext.withStackTrace(stackTrace);
             Path filePath = prepareSnapshotFilePath();
-            String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
+            String json = SnapshotSerializer.serializeToJson(obj);
             writeJsonToFile(filePath, json);
             constructorContext.setSnapshotFilePath(filePath.toString());
         } catch (IOException e) {
