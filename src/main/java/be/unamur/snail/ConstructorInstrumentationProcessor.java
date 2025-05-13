@@ -19,7 +19,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
     @Override
     public void process(CtConstructor<?> constructor) {
-        if (constructor.getBody() == null) return;
+        if (constructor.getBody() == null || constructor.getDeclaringType().isEnum()) return;
         Factory factory = getFactory();
 
         String fileName = getFileName(constructor);

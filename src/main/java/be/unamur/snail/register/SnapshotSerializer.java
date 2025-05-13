@@ -1,15 +1,17 @@
 package be.unamur.snail.register;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.deser.DeserializationProblemHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InaccessibleObjectException;
@@ -27,11 +29,11 @@ public class SnapshotSerializer {
 //        System.out.println("\nobject: " + object);
         ObjectMapper mapper = new ObjectMapper();
 //        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.enable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
+        mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
 
-        String result = null;
+        String result;
         try {
             result = mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {

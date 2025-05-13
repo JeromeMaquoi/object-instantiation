@@ -4,10 +4,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import spoon.Launcher;
+import spoon.reflect.CtModel;
 import spoon.reflect.code.CtConstructorCall;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.declaration.CtEnum;
 import spoon.reflect.declaration.CtParameter;
+import spoon.reflect.declaration.CtType;
 import spoon.reflect.factory.CodeFactory;
 import spoon.reflect.factory.Factory;
 import spoon.reflect.factory.TypeFactory;
@@ -21,8 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class ConstructorInstrumentationProcessorTest {
-    private Launcher launcher;
-
     Path inputPath;
 
     ConstructorInstrumentationProcessor processor;
@@ -44,7 +45,6 @@ class ConstructorInstrumentationProcessorTest {
     @BeforeEach
     void setUp() {
         inputPath = Paths.get("src/test/resources/test-inputs/");
-        launcher = new Launcher();
         factory = mock(Factory.class);
         typeFactory = mock(TypeFactory.class);
         codeFactory = mock(CodeFactory.class);
