@@ -20,6 +20,9 @@ public class SendUtils {
 
     private ConstructorContext constructorContext;
 
+    //TODO get max depth from bash script
+    private static final SnapshotSerializer serializer = new SnapshotSerializer(3);
+
     public SendUtils() {
         this.envVariables = new EnvVariables();
         this.constructorContext = new ConstructorContext();
@@ -53,7 +56,7 @@ public class SendUtils {
             List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
             constructorContext = constructorContext.withStackTrace(stackTrace);
             Path filePath = prepareSnapshotFilePath();
-            String json = SnapshotSerializer.serializeToJson(obj);
+            String json = serializer.serializeToJson(obj);
             writeJsonToFile(filePath, json);
             constructorContext.setSnapshotFilePath(filePath.toString());
         } catch (IOException e) {

@@ -10,6 +10,8 @@ import spoon.reflect.CtModel;
 import spoon.reflect.declaration.CtAnnotation;
 import spoon.reflect.declaration.CtType;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -39,7 +41,10 @@ class JsonIdentityAnnotationProcessorIT {
     }
 
     @Test
-    void annotationShouldBeAddedToClassTest() {
+    void annotationShouldBeAddedToClassTest() throws IOException {
+        Path outputFile = outputPath.resolve("test/TestConstructorClassWithAssignments.java");
+        assertTrue(Files.exists(outputFile), "Output file should be generated");
+
         CtModel model = launcher.getModel();
         CtType<?> ctClass = model.getAllTypes().stream()
                 .filter(t -> t.getSimpleName().equals("TestConstructorClassWithAssignments"))
@@ -55,5 +60,8 @@ class JsonIdentityAnnotationProcessorIT {
         assertEquals(JsonIdentityInfo.class.getName(), annotation.getAnnotationType().getQualifiedName());
         assertTrue(annotation.getValues().get("generator").toString().contains("IntSequenceGenerator"));
         assertEquals("\"@id\"", annotation.getValues().get("property").toString());
+
+        String fileContent = Files.readString(outputFile);
+        System.out.println("fileContent: " + fileContent);
     }
 }

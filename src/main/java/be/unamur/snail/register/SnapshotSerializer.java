@@ -22,26 +22,83 @@ import java.util.regex.Pattern;
 
 public class SnapshotSerializer {
     private static final Logger log = LoggerFactory.getLogger(SnapshotSerializer.class);
+    private final Set<Object> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+    private final int maxDepth;
+    private final ObjectMapper mapper;
 
-    private SnapshotSerializer() {}
+    public SnapshotSerializer(int maxDepth) {
+        this.maxDepth = maxDepth;
+        this.mapper = new ObjectMapper();
+        this.mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        this.mapper.setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE);
+    }
 
-    public static String serializeToJson(Object object) {
-//        System.out.println("\nobject: " + object);
-        ObjectMapper mapper = new ObjectMapper();
+    public String serializeToJson(Object root) {
+        System.out.println("\nobject annotation : " + root.getClass().getAnnotation(JsonIdentityInfo.class));
+
 //        mapper.enable(SerializationFeature.INDENT_OUTPUT);
-        mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
+        /*mapper.disable(SerializationFeature.FAIL_ON_SELF_REFERENCES);
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
-        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
+        mapper.setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);*/
 
-        String result;
+        Object snapshot = buildSnapshot(root, 0);
         try {
-            result = mapper.writeValueAsString(object);
+            return mapper.writeValueAsString(snapshot);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-//        System.out.println("result: " + result);
+    }
+
+    public Object buildSnapshot(Object obj, int depth) {
+        if (obj == null) return null;
+        if (visited.contains(obj)) return Map.of("ref", identity(obj), "note", "already visited");
+        if (depth > maxDepth || isPrimitiveOrWrapper(obj.getClass()) || obj instanceof String) return obj;
+
+        visited.add(obj);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("_class", obj.getClass().getName());
+        result.put("_id", identity(obj));
+
+        for (Field field : getAllFields(obj.getClass())) {
+            field.setAccessible(true);
+            try {
+                Object fieldValue = field.get(obj);
+                result.put(field.getName(), buildSnapshot(fieldValue, depth + 1));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        System.out.println(result);
         return result;
     }
+
+    private String identity(Object obj) {
+        return "@" + System.identityHashCode(obj);
+    }
+
+    private boolean isPrimitiveOrWrapper(Class<?> clazz) {
+        return clazz.isPrimitive() ||
+                clazz == Boolean.class || clazz == Byte.class ||
+                clazz == Character.class || clazz == Short.class ||
+                clazz == Integer.class || clazz == Long.class ||
+                clazz == Float.class || clazz == Double.class;
+    }
+
+    private List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        while (type != null && type != Object.class) {
+            fields.addAll(Arrays.asList(type.getDeclaredFields()));
+            type = type.getSuperclass();
+        }
+        return fields;
+    }
+
+
+
+
+
+
 
     public static String serializeToJson(Object object, Set<Object> visitedObjects) {
         if (object == null) return "null";
