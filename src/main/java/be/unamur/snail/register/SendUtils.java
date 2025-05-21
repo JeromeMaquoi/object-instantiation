@@ -36,12 +36,12 @@ public class SendUtils {
         constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
     }
 
-    public void addAttribute(String attributeName, String attributeType, Object actualObject) {
+    public void addAttribute(String attributeName, String attributeType, Object actualObject, String rightHandSideExpressionType) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
-        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
+        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType, rightHandSideExpressionType);
         constructorContext.addAttribute(attributePayload);
     }
 

@@ -42,7 +42,9 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess);
+                String sourceType = getRightHandSideExpression(assignment.getAssignment(), constructor);
+
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess, sourceType);
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
@@ -52,6 +54,25 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
 
         CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
         constructor.getBody().addStatement(writeConstructorContextInvocation);
+    }
+
+    public String getRightHandSideExpression(CtExpression<?> expression, CtConstructor<?> constructor) {
+        String sourceType;
+        if (expression instanceof CtConstructorCall<?>) {
+            sourceType = "constructor call";
+        } else if (expression instanceof CtVariableRead<?> variableRead) {
+            CtVariableReference<?> variable = variableRead.getVariable();
+            boolean isConstructorParam = constructor.getParameters().stream()
+                    .anyMatch(p -> p.getReference().equals(variable));
+            sourceType = isConstructorParam ? "constructor parameter" : "variable";
+        } else if (expression instanceof CtLiteral<?>) {
+            sourceType = "literal";
+        } else if (expression instanceof CtInvocation<?>) {
+            sourceType = "method call";
+        } else {
+            sourceType = "other";
+        }
+        return sourceType;
     }
 
     public String getFileName(CtConstructor<?> constructor) {
@@ -131,7 +152,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
+    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess, String sourceType) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
@@ -144,7 +165,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType),
-                fieldAccess
+                fieldAccess,
+                factory.Code().createLiteral(sourceType)
         );
     }
 }

@@ -71,6 +71,7 @@ public class ConstructorContext implements CsvWritableContext {
     }
 
     public String attributesToCsvRow() {
+        // TODO Comment s'assurer que les attributs seront toujours dans le même sens? Est-ce que la méthode "stream" est ordonnée ou non?
         String attributesStr = this.attributes.stream()
                 .map(AttributeContext::toCsvRow)
                 .reduce((a,b)->a + "," + b)

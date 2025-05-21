@@ -63,7 +63,7 @@ class SendUtilsTest {
     void testAddAttributeAddsToConstructorContext() {
         sendUtils.initConstructorContext("file", "Class", "init", List.of());
 
-        sendUtils.addAttribute("field", "String", "hello");
+        sendUtils.addAttribute("field", "String", "hello", "literal");
 
         ConstructorContext context = sendUtils.getConstructorContext();
         assertEquals(1, context.getAttributes().size());
@@ -78,7 +78,7 @@ class SendUtilsTest {
     void testAddAttributeThrowsIfNotInitialized() {
         SendUtils utils = new SendUtils();
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            utils.addAttribute("field", "String", "value");
+            utils.addAttribute("field", "String", "value", "literal");
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
     }

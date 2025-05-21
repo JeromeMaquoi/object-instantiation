@@ -4,11 +4,13 @@ public class AttributeContext {
     private final String name;
     private final String type;
     private final String actualType;
+    private final String rhs;
 
-    public AttributeContext(String name, String type, String actualType) {
+    public AttributeContext(String name, String type, String actualType, String rhs) {
         this.name = name;
         this.type = type;
         this.actualType = actualType;
+        this.rhs = rhs;
     }
 
     public String getName() {
@@ -23,8 +25,12 @@ public class AttributeContext {
         return actualType;
     }
 
+    public String getRhs() {
+        return rhs;
+    }
+
     public String toCsvRow() {
-        return String.format("[%s,%s]", type, actualType);
+        return String.format("[%s,%s,%s]", type, actualType, rhs);
     }
 
     @Override
