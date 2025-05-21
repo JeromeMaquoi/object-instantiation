@@ -171,32 +171,33 @@ class SnapshotSerializerTest {
         SampleEnumObject obj = new SampleEnumObject("name", EnumComplicate.KILOMETERS);
         assertDoesNotThrow(() -> {
             String json = serializer.serializeToJson(obj);
+            System.out.println("json: " + json);
             assertTrue(json.contains("KILOMETERS"));
         });
     }
 
     @Test
-    void buildSnapshotNullObjectTest() {
-        Object result = serializer.buildSnapshot(null, 0);
+    void serializeToJsonNullObjectTest() {
+        Object result = serializer.serializeToJson(null);
         assertNull(result);
     }
 
     @Test
-    void buildSnapshotPrimitiveValueTest() {
-        Object result = serializer.buildSnapshot(42, 0);
+    void serializeToJsonPrimitiveValueTest() {
+        Object result = serializer.serializeToJson(42);
         assertEquals(42, result);
     }
 
     @Test
-    void buildSnapshotStringValueTest() {
-        Object result = serializer.buildSnapshot("hello", 0);
+    void serializeToJsonStringValueTest() {
+        Object result = serializer.serializeToJson("hello");
         assertEquals("hello", result);
     }
 
     @Test
-    void buildSnapshotSimpleObjectTest() {
+    void serializeToJsonSimpleObjectTest() {
         Person person = new Person("John", 42);
-        Object actualObject = serializer.buildSnapshot(person, 0);
+        Object actualObject = serializer.serializeToJson(person);
         assertInstanceOf(Map.class, actualObject);
 
         Map<String, Object> map = (Map<String, Object>) actualObject;
