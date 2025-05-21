@@ -90,7 +90,7 @@ class ConstructorInstrumentationProcessorIT {
                 .stream()
                 .filter(inv -> inv.getExecutable().getSimpleName().equals("getSnapshot"))
                 .count();
-        assertEquals(1, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
+        assertEquals(0, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
@@ -144,7 +144,7 @@ class ConstructorInstrumentationProcessorIT {
                 .stream()
                 .filter(inv -> inv.getExecutable().getSimpleName().equals("getSnapshot"))
                 .count();
-        assertEquals(1, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
+        assertEquals(0, getSnapshotInvocationCount, "Constructor should contain 2 'getSnapshot' invocations");
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);

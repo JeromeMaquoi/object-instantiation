@@ -84,11 +84,11 @@ class SendUtilsTest {
     }
 
     @Test
-    void getSnapshotThrowsIfNotInitialized() {
+    void getSnapshotAndStackTraceThrowsIfNotInitialized() {
         SendUtils utils = new SendUtils();
         Object object = new Object();
         Exception exception = assertThrows(IllegalStateException.class, () -> {
-            utils.getSnapshot(object);
+            utils.getSnapshotAndStackTrace(object);
         });
         assertEquals("ConstructorContext is not initialized", exception.getMessage());
     }

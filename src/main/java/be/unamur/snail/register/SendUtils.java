@@ -45,13 +45,19 @@ public class SendUtils {
         constructorContext.addAttribute(attributePayload);
     }
 
-    public void getSnapshot(Object obj) {
+    public void getSnapshotAndStackTrace(Object obj) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+        constructorContext = constructorContext.withStackTrace(stackTrace);
+        //TODO resolve snapshot errors to add it to the csv
+//        getSnapshot(obj);
+
+    }
+
+    public void getSnapshot(Object obj) {
         try {
-            List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
-            constructorContext = constructorContext.withStackTrace(stackTrace);
             Path filePath = prepareSnapshotFilePath();
             String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
             writeJsonToFile(filePath, json);

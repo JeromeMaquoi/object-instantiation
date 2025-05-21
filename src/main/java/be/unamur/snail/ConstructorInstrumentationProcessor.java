@@ -47,8 +47,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             }
         }
 
-        CtInvocation<?> getSnapshotInvocation = createGetSnapshotInvocation(factory, utilsAccess, constructor);
-        constructor.getBody().insertEnd(getSnapshotInvocation);
+        CtInvocation<?> getSnapshotAndStackTraceInvocation = createGetSnapshotAndStackTraceInvocation(factory, utilsAccess, constructor);
+        constructor.getBody().insertEnd(getSnapshotAndStackTraceInvocation);
 
         CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
         constructor.getBody().addStatement(writeConstructorContextInvocation);
@@ -77,12 +77,12 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
     }
 
-    public CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
+    public CtInvocation<?> createGetSnapshotAndStackTraceInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
                 factory.Type().voidPrimitiveType(),
-                "getSnapshot"
+                "getSnapshotAndStackTrace"
         );
 
         CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
