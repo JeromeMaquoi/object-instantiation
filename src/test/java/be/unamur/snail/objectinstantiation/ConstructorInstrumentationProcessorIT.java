@@ -6,19 +6,25 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
+import spoon.reflect.code.CtExpression;
 import spoon.reflect.code.CtInvocation;
 import spoon.reflect.code.CtLocalVariable;
 import spoon.reflect.declaration.CtClass;
 import spoon.reflect.declaration.CtConstructor;
+import spoon.reflect.factory.Factory;
 import spoon.reflect.visitor.filter.TypeFilter;
+import spoon.support.compiler.VirtualFile;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.*;
 
 class ConstructorInstrumentationProcessorIT {
     private Launcher launcher;
@@ -148,5 +154,165 @@ class ConstructorInstrumentationProcessorIT {
 
         String fileContent = Files.readString(outputFile);
         System.out.println("Generated file content:\n" + fileContent);
+    }
+
+
+    @Test
+    void literalAssignmentTest() {
+        String code = """
+            public class LiteralExample {
+                private int value;
+                public LiteralExample() {
+                    this.value = 42;
+                }
+            }
+            """;
+
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(1, processor.foundTypes.size());
+        assertTrue(processor.foundTypes.contains("literal"));
+    }
+
+    @Test
+    void constructorCallAssignmentTest() {
+        String code = """
+            public class ConstructorCallExample {
+                private String text;
+                public ConstructorCallExample() {
+                    this.text = new String("abc");
+                }
+            }
+        """;
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertTrue(processor.foundTypes.contains("constructor call"));
+    }
+
+    @Test
+    void variableAssignmentTest() {
+        String code = """
+            public class VariableExample {
+                private int x;
+                public VariableExample() {
+                    int temp = 10;
+                    this.x = temp;
+                }
+            }
+        """;
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(1, processor.foundTypes.size());
+        assertThat(processor.foundTypes).contains("variable");
+    }
+
+    @Test
+    void parameterAssignmentTest() {
+        String code = """
+            public class ParameterExample {
+                private int x;
+                public ParameterExample(int x) {
+                    this.x = x;
+                }
+            }
+        """;
+
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(1, processor.foundTypes.size());
+        assertThat(processor.foundTypes).contains("constructor parameter");
+    }
+
+    @Test
+    void methodCallAssignmentTest() {
+        String code = """
+            public class MethodCallExample {
+                private String val;
+                public MethodCallExample() {
+                    this.val = getValue();
+                }
+                private String getValue() { return "ok"; }
+            }
+        """;
+
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(1, processor.foundTypes.size());
+        assertThat(processor.foundTypes).contains("method call");
+    }
+
+    @Test
+    void parameterAndConstructorCallAssignmentTest() {
+        String code = """
+            public class ParameterAndConstructorCallExample {
+                private String a;
+                private String b;
+                public ParameterAndConstructorCallExample(String a) {
+                    this.a = a;
+                    this.b = new String("ok");
+                }
+            }
+        """;
+
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(2, processor.foundTypes.size());
+        assertThat(processor.foundTypes).containsExactlyInAnyOrder("constructor parameter", "constructor call");
+    }
+
+    @Test
+    void constructorCallAndVariableAssignmentTest() {
+        String code = """
+            public class ClassExample {
+                private String a;
+                private String b;
+                public ClassExample() {
+                    String temp = "ok";
+                    this.a = temp;
+                    this.b = new String("ok");
+                }
+            }
+        """;
+
+        DummyProcessor processor = new DummyProcessor();
+        processClassWithProcessor(code, processor);
+
+        assertEquals(2, processor.foundTypes.size());
+        assertThat(processor.foundTypes).containsExactlyInAnyOrder("variable", "constructor call");
+    }
+
+    private void processClassWithProcessor(String classCode, DummyProcessor processor) {
+        Launcher launcher = new Launcher();
+        launcher.addInputResource(new VirtualFile(classCode));
+        launcher.buildModel();
+        Factory factory = launcher.getFactory();
+        processor.setFactory(factory);
+
+        List<? extends CtClass<?>> classes = launcher.getFactory().Class().getAll().stream()
+                .filter(t -> t instanceof CtClass<?>)
+                .map(t -> ((CtClass<?>) t))
+                .toList();
+        for (CtClass<?> clazz : classes) {
+            for (CtConstructor<?> constructor : clazz.getConstructors()) {
+                processor.process(constructor);
+            }
+        }
+    }
+
+    static class DummyProcessor extends ConstructorInstrumentationProcessor {
+        List<String> foundTypes = new ArrayList<>();
+
+        @Override
+        public String getRightHandSideExpression(CtExpression<?> expression, CtConstructor<?> constructor) {
+            String type = super.getRightHandSideExpression(expression, constructor);
+            foundTypes.add(type);
+            return type;
+        }
     }
 }
