@@ -61,7 +61,7 @@ public class SendUtils {
             Path filePath = prepareSnapshotFilePath();
             String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
             writeJsonToFile(filePath, json);
-            constructorContext.setSnapshotFilePath(filePath.toString());
+            constructorContext.setSnapshot(filePath.toString());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

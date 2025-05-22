@@ -10,7 +10,7 @@ public class ConstructorContext implements CsvWritableContext {
     private List<String> parameters;
     private Set<AttributeContext> attributes;
     private List<StackTraceElement> stackTrace;
-    private String snapshotFilePath;
+    private String snapshot;
 
     public ConstructorContext() {}
 
@@ -44,8 +44,8 @@ public class ConstructorContext implements CsvWritableContext {
         return this;
     }
 
-    public ConstructorContext withSnapshotFilePath(String snapshotFilePath) {
-        this.snapshotFilePath = snapshotFilePath;
+    public ConstructorContext withSnapshot(String snapshot) {
+        this.snapshot = snapshot;
         return this;
     }
 
@@ -67,7 +67,7 @@ public class ConstructorContext implements CsvWritableContext {
     public String toCsvRow() {
         String constructorWithParameters = createMethodWithParameters(methodName, parameters);
         String traceString = createStackTrace(stackTrace);
-        return String.format("%s,%s,%s,%s,%s,%s", fileName,className,constructorWithParameters,attributesToCsvRow(),traceString,snapshotFilePath);
+        return String.format("%s,%s,%s,%s,%s,%s", fileName,className,constructorWithParameters,attributesToCsvRow(),traceString, snapshot);
     }
 
     public String attributesToCsvRow() {
@@ -98,12 +98,12 @@ public class ConstructorContext implements CsvWritableContext {
         return stackTrace;
     }
 
-    public String getSnapshotFilePath() {
-        return snapshotFilePath;
+    public String getSnapshot() {
+        return snapshot;
     }
 
-    public void setSnapshotFilePath(String snapshotFilePath) {
-        this.snapshotFilePath = snapshotFilePath;
+    public void setSnapshot(String snapshot) {
+        this.snapshot = snapshot;
     }
 
     public boolean isEmpty() {
@@ -119,7 +119,7 @@ public class ConstructorContext implements CsvWritableContext {
                 ", parameters=" + parameters +
                 ", attributes=" + attributes +
                 ", stackTrace=" + stackTrace +
-                ", snapshotFilePath='" + snapshotFilePath + '\'' +
+                ", snapshotFilePath='" + snapshot + '\'' +
                 '}';
     }
 }

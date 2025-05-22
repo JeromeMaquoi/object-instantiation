@@ -15,7 +15,7 @@ class ConstructorContextTest {
         Set<AttributeContext> attributes = Set.of(attr1, attr2);
 
         ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withAttributes(attributes).withParameters(List.of("String", "int"));
-        context.setSnapshotFilePath("snapshot.json");
+        context.setSnapshot("snapshot");
 
         String result = context.attributesToCsvRow();
         assertTrue(result.startsWith("\""));
@@ -29,7 +29,7 @@ class ConstructorContextTest {
         AttributeContext attr = new AttributeContext("field1", "String", "java.lang.String", "literal");
         StackTraceElement element = new StackTraceElement("com.example.MyClass", "myMethod", "MyClass.java", 42);
         
-        ConstructorContext context = new ConstructorContext().withFileName("MyClass.java").withClassName("com.example.MyClass").withMethodName("MyClass").withParameters(List.of("String")).withAttributes(Set.of(attr)).withStackTrace(List.of(element)).withSnapshotFilePath("snapshot.json");
+        ConstructorContext context = new ConstructorContext().withFileName("MyClass.java").withClassName("com.example.MyClass").withMethodName("MyClass").withParameters(List.of("String")).withAttributes(Set.of(attr)).withStackTrace(List.of(element)).withSnapshot("snapshot");
 
         String row = context.toCsvRow();
 
