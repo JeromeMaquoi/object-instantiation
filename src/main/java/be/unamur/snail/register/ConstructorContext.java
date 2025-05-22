@@ -67,16 +67,19 @@ public class ConstructorContext implements CsvWritableContext {
     public String toCsvRow() {
         String constructorWithParameters = createMethodWithParameters(methodName, parameters);
         String traceString = createStackTrace(stackTrace);
-        return String.format("%s,%s,%s,%s,%s,%s,%s", fileName,className,constructorWithParameters,attributes.size(),attributesToCsvRow(),traceString,snapshotFilePath);
+        return String.format("%s,%s,%s,%s,%s,%s", fileName,className,constructorWithParameters,attributesToCsvRow(),traceString,snapshotFilePath);
     }
 
     public String attributesToCsvRow() {
         // TODO Comment s'assurer que les attributs seront toujours dans le même sens? Est-ce que la méthode "stream" est ordonnée ou non?
+        if (this.attributes.isEmpty()) {
+            return "\"0[]\"";
+        }
         String attributesStr = this.attributes.stream()
                 .map(AttributeContext::toCsvRow)
                 .reduce((a,b)->a + "," + b)
                 .orElse("");
-        return "\"" + attributesStr + "\"";
+        return "\"" + this.attributes.size() + "[" + attributesStr + "]\"";
     }
 
     public List<String> getParameters() {

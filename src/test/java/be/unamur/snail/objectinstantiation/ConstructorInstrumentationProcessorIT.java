@@ -206,7 +206,7 @@ class ConstructorInstrumentationProcessorIT {
         processClassWithProcessor(code, processor);
 
         assertEquals(1, processor.foundTypes.size());
-        assertThat(processor.foundTypes).contains("variable");
+        assertThat(processor.foundTypes).contains("variable reference");
     }
 
     @Test
@@ -243,7 +243,7 @@ class ConstructorInstrumentationProcessorIT {
         processClassWithProcessor(code, processor);
 
         assertEquals(1, processor.foundTypes.size());
-        assertThat(processor.foundTypes).contains("method call");
+        assertThat(processor.foundTypes).contains("invocation");
     }
 
     @Test
@@ -271,11 +271,11 @@ class ConstructorInstrumentationProcessorIT {
         String code = """
             public class ClassExample {
                 private String a;
-                private String b;
+                private List b;
                 public ClassExample() {
                     String temp = "ok";
                     this.a = temp;
-                    this.b = new String("ok");
+                    this.b = new ArrayList();
                 }
             }
         """;
@@ -284,7 +284,7 @@ class ConstructorInstrumentationProcessorIT {
         processClassWithProcessor(code, processor);
 
         assertEquals(2, processor.foundTypes.size());
-        assertThat(processor.foundTypes).containsExactlyInAnyOrder("variable", "constructor call");
+        assertThat(processor.foundTypes).containsExactlyInAnyOrder("variable reference", "constructor call");
     }
 
     private void processClassWithProcessor(String classCode, DummyProcessor processor) {

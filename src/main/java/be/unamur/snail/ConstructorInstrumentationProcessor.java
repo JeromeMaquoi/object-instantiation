@@ -64,11 +64,12 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
             CtVariableReference<?> variable = variableRead.getVariable();
             boolean isConstructorParam = constructor.getParameters().stream()
                     .anyMatch(p -> p.getReference().equals(variable));
-            sourceType = isConstructorParam ? "constructor parameter" : "variable";
+            sourceType = isConstructorParam ? "constructor parameter" : "variable reference";
         } else if (expression instanceof CtLiteral<?>) {
             sourceType = "literal";
         } else if (expression instanceof CtInvocation<?>) {
-            sourceType = "method call";
+            // TODO add method names handling to see if really just an invocation or if it's a method that hides a constructor (for example with the name "builder" or "newInstance")
+            sourceType = "invocation";
         } else {
             sourceType = "other";
         }

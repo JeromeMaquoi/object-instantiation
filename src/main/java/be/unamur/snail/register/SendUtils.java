@@ -14,7 +14,7 @@ public class SendUtils {
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
-    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
+    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributes,stacktrace,snapshot\n";
     public final EnvVariables envVariables;
     private final StackTraceHelper stackTraceHelper;
 
