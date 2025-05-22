@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class ConstructorContextTest {
     @Test
     void attributesToCsvRowWithAttributesTest() {
-        AttributeContext attr1 = new AttributeContext("field1", "String", "java.lang.String");
-        AttributeContext attr2 = new AttributeContext("field2", "int", "int");
+        AttributeContext attr1 = new AttributeContext("field1", "String", "java.lang.String", "literal");
+        AttributeContext attr2 = new AttributeContext("field2", "int", "int", "literal");
         Set<AttributeContext> attributes = Set.of(attr1, attr2);
 
         ConstructorContext context = new ConstructorContext().withFileName("file.java").withClassName("Class").withMethodName("method").withAttributes(attributes).withParameters(List.of("String", "int"));
@@ -26,7 +26,7 @@ class ConstructorContextTest {
 
     @Test
     void toCsvRowOutpusCorrectFormatTest() {
-        AttributeContext attr = new AttributeContext("field1", "String", "java.lang.String");
+        AttributeContext attr = new AttributeContext("field1", "String", "java.lang.String", "literal");
         StackTraceElement element = new StackTraceElement("com.example.MyClass", "myMethod", "MyClass.java", 42);
         
         ConstructorContext context = new ConstructorContext().withFileName("MyClass.java").withClassName("com.example.MyClass").withMethodName("MyClass").withParameters(List.of("String")).withAttributes(Set.of(attr)).withStackTrace(List.of(element)).withSnapshotFilePath("snapshot.json");

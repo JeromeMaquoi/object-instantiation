@@ -14,7 +14,7 @@ public class SendUtils {
     private static final Logger log = LoggerFactory.getLogger(SendUtils.class);
 
     private static String CSV_HEADER_METHOD = "file,class,method,stacktrace\n";
-    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributesQty,attributes,stacktrace,snapshot\n";
+    private static String CSV_HEADER_CONSTRUCTOR = "file,class,constructor,attributes,stacktrace,snapshot\n";
     public final EnvVariables envVariables;
     private final StackTraceHelper stackTraceHelper;
 
@@ -36,22 +36,28 @@ public class SendUtils {
         constructorContext = constructorContext.withFileName(fileName).withClassName(className).withMethodName(methodName).withParameters(parameters).withAttributes(new HashSet<>());
     }
 
-    public void addAttribute(String attributeName, String attributeType, Object actualObject) {
+    public void addAttribute(String attributeName, String attributeType, Object actualObject, String rightHandSideExpressionType) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
         String actualType = actualObject != null ? actualObject.getClass().getName() : "null";
-        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType);
+        AttributeContext attributePayload = new AttributeContext(attributeName, attributeType, actualType, rightHandSideExpressionType);
         constructorContext.addAttribute(attributePayload);
     }
 
-    public void getSnapshot(Object obj) {
+    public void getSnapshotAndStackTrace(Object obj) {
         if (constructorContext == null || constructorContext.isEmpty()) {
             throw new IllegalStateException("ConstructorContext is not initialized");
         }
+        List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
+        constructorContext = constructorContext.withStackTrace(stackTrace);
+        //TODO resolve snapshot errors to add it to the csv
+//        getSnapshot(obj);
+
+    }
+
+    public void getSnapshot(Object obj) {
         try {
-            List<StackTraceElement> stackTrace = stackTraceHelper.getFilteredStackTrace();
-            constructorContext = constructorContext.withStackTrace(stackTrace);
             Path filePath = prepareSnapshotFilePath();
             String json = SnapshotSerializer.serializeToJson(obj, new HashSet<>());
             writeJsonToFile(filePath, json);

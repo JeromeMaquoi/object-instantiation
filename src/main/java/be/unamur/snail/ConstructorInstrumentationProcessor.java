@@ -42,16 +42,38 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 String fieldName = fieldAccess.getVariable().getSimpleName();
                 String fieldType = fieldAccess.getVariable().getType().getQualifiedName();
 
-                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess);
+                String sourceType = getRightHandSideExpression(assignment.getAssignment(), constructor);
+
+                CtInvocation<?> prepareMethodInvocation = createAddAttributeMethodInvocation(factory, utilsAccess, fieldName, fieldType, fieldAccess, sourceType);
                 assignment.insertAfter(prepareMethodInvocation);
             }
         }
 
-        CtInvocation<?> getSnapshotInvocation = createGetSnapshotInvocation(factory, utilsAccess, constructor);
-        constructor.getBody().insertEnd(getSnapshotInvocation);
+        CtInvocation<?> getSnapshotAndStackTraceInvocation = createGetSnapshotAndStackTraceInvocation(factory, utilsAccess, constructor);
+        constructor.getBody().insertEnd(getSnapshotAndStackTraceInvocation);
 
         CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
         constructor.getBody().addStatement(writeConstructorContextInvocation);
+    }
+
+    public String getRightHandSideExpression(CtExpression<?> expression, CtConstructor<?> constructor) {
+        String sourceType;
+        if (expression instanceof CtConstructorCall<?>) {
+            sourceType = "constructor call";
+        } else if (expression instanceof CtVariableRead<?> variableRead) {
+            CtVariableReference<?> variable = variableRead.getVariable();
+            boolean isConstructorParam = constructor.getParameters().stream()
+                    .anyMatch(p -> p.getReference().equals(variable));
+            sourceType = isConstructorParam ? "constructor parameter" : "variable reference";
+        } else if (expression instanceof CtLiteral<?>) {
+            sourceType = "literal";
+        } else if (expression instanceof CtInvocation<?>) {
+            // TODO add method names handling to see if really just an invocation or if it's a method that hides a constructor (for example with the name "builder" or "newInstance")
+            sourceType = "invocation";
+        } else {
+            sourceType = "other";
+        }
+        return sourceType;
     }
 
     public String getFileName(CtConstructor<?> constructor) {
@@ -77,12 +99,12 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return factory.Code().createLocalVariable(utilsType, "utils", constructorCall);
     }
 
-    public CtInvocation<?> createGetSnapshotInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
+    public CtInvocation<?> createGetSnapshotAndStackTraceInvocation(Factory factory, CtExpression<?> target, CtConstructor<?> constructor) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtExecutableReference<?> getSnapshotMethod = factory.Executable().createReference(
                 registerUtilsType,
                 factory.Type().voidPrimitiveType(),
-                "getSnapshot"
+                "getSnapshotAndStackTrace"
         );
 
         CtThisAccess<?> thisAccess = factory.Code().createThisAccess(constructor.getDeclaringType().getReference());
@@ -131,7 +153,7 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         );
     }
 
-    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess) {
+    public CtInvocation<?> createAddAttributeMethodInvocation(Factory factory, CtExpression<?> target, String fieldName, String fieldType, CtFieldAccess<?> fieldAccess, String sourceType) {
         CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
         CtTypeReference<Void> voidType = factory.Type().voidPrimitiveType();
         CtExecutableReference<?> addAttributeMethod = factory.Executable().createReference(
@@ -144,7 +166,8 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
                 addAttributeMethod,
                 factory.Code().createLiteral(fieldName),
                 factory.Code().createLiteral(fieldType),
-                fieldAccess
+                fieldAccess,
+                factory.Code().createLiteral(sourceType)
         );
     }
 }
