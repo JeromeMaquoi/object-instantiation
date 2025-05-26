@@ -26,6 +26,10 @@ if mvn clean verify; then
   echo "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
   java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path"
 
+  # Execute CK on the project
+  cd ..
+  output_repo_path="$output_repo_path" plugin_path="$PWD/plugins" bash ./ck.sh
+
   # Copy be.unamur.snail.register package to the output folder
   echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
   mkdir -p "${output_source_code}/be/unamur/snail/register"
@@ -41,7 +45,7 @@ if mvn clean verify; then
     echo "./gradlew clean spring-boot-project:spring-boot:test"
   #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
   #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.logging.log4j2.ColorConverterTests
-    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests
+    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties
   fi
 
   if [ "$PROJECT_NAME" == "spoon" ]; then
