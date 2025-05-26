@@ -1,5 +1,8 @@
 package be.unamur.snail.register;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,6 +58,21 @@ public class SendUtils {
 //        getSnapshot(obj);
 
     }
+
+    public void send() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
+        String json;
+        try {
+            json = mapper.writeValueAsString(constructorContext);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("json : {}", json);
+        // TODO post to the API
+    }
+
+
 
     public void getSnapshot(Object obj) {
         try {
@@ -181,55 +199,4 @@ public class SendUtils {
     private boolean isConstructor(StackTraceElement element) {
         return element.getMethodName().equals("<init>");
     }
-    
-
-    /*private static void printFields(Object obj, int depth) {
-        if (obj == null) {
-            log.warn("Object is null.");
-            return;
-        }
-
-        Class<?> clazz = obj.getClass();
-        Field[] fields = clazz.getDeclaredFields();
-        String indent = "    ".repeat(depth);
-
-        for (Field field : fields) {
-            if (Modifier.isStatic(field.getModifiers())) {
-                continue;
-            }
-            field.setAccessible(true); // Access private fields
-            try {
-                Object value = field.get(obj);
-                System.out.printf("%s    %s  (%s) = %s%n",
-                        indent,
-                        field.getName(),
-                        field.getType().getName(),
-                        value != null ? value.toString() : "null"
-                );
-
-                if (value instanceof Collection<?> collection) {
-                    for (Object item : collection) {
-                        System.out.println(indent + "[Collection Item]:");
-                        printFields(item, depth + 2);
-                    }
-                }
-
-                else if (value instanceof Map<?,?> map) {
-                    for (Map.Entry<?,?> entry : map.entrySet()) {
-                        System.out.println(indent + "  [Map Entry]:");
-                        System.out.println(indent + "    Key:");
-                        printFields(entry.getKey(), depth + 3);
-                        System.out.println(indent + "    Value:");
-                        printFields(entry.getValue(), depth + 3);
-                    }
-                }
-
-                else if (value != null && !field.getType().isPrimitive() && !field.getType().getName().startsWith("java.lang")) {
-                    printFields(value, depth + 1);
-                }
-            } catch (IllegalAccessException e) {
-                System.out.printf("    Unable to access field: %s%n", field.getName());
-            }
-        }
-    }*/
 }

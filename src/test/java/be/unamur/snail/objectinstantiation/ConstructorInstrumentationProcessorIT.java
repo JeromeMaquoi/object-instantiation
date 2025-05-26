@@ -77,12 +77,12 @@ class ConstructorInstrumentationProcessorIT {
                 .count();
         assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
-        long writeConstructorContextInvocationCount = constructor.getBody()
+        long sendInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("writeConstructorContext"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
                 .count();
-        assertEquals(1, writeConstructorContextInvocationCount, "Constructor should contain one 'writeConstructorContext' invocation");
+        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
 
         long addAttributeInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
@@ -131,12 +131,12 @@ class ConstructorInstrumentationProcessorIT {
                 .count();
         assertEquals(1, initConstructorInvocationCount, "Constructor should contain one 'initConstructorContext' invocation");
 
-        long writeConstructorContextInvocationCount = constructor.getBody()
+        long sendInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))
                 .stream()
-                .filter(inv -> inv.getExecutable().getSimpleName().equals("writeConstructorContext"))
+                .filter(inv -> inv.getExecutable().getSimpleName().equals("send"))
                 .count();
-        assertEquals(1, writeConstructorContextInvocationCount, "Constructor should contain one 'writeConstructorContext' invocation");
+        assertEquals(1, sendInvocationCount, "Constructor should contain one 'send' invocation");
 
         long addAttributeInvocationCount = constructor.getBody()
                 .getElements(new TypeFilter<>(CtInvocation.class))

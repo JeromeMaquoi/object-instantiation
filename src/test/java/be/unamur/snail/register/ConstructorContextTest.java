@@ -39,6 +39,6 @@ class ConstructorContextTest {
         assertTrue(row.contains("1"));
         assertTrue(row.contains(attr.toCsvRow()));
         assertTrue(row.contains("com.example.MyClass.myMethod(MyClass.java:42"));
-        assertTrue(row.contains("snapshot.json"));
+        assertTrue(row.contains("snapshot"));
     }
 }

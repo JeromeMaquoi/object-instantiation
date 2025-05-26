@@ -52,8 +52,11 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         CtInvocation<?> getSnapshotAndStackTraceInvocation = createGetSnapshotAndStackTraceInvocation(factory, utilsAccess, constructor);
         constructor.getBody().insertEnd(getSnapshotAndStackTraceInvocation);
 
-        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
-        constructor.getBody().addStatement(writeConstructorContextInvocation);
+//        CtInvocation<?> writeConstructorContextInvocation = createWriteConstructorContextInvocation(factory, utilsAccess);
+//        constructor.getBody().addStatement(writeConstructorContextInvocation);
+
+        CtInvocation<?> sendInvocation = createSendInvocation(factory, utilsAccess);
+        constructor.getBody().insertEnd(sendInvocation);
     }
 
     public String getRightHandSideExpression(CtExpression<?> expression, CtConstructor<?> constructor) {
@@ -127,6 +130,19 @@ public class ConstructorInstrumentationProcessor extends AbstractProcessor<CtCon
         return factory.Code().createInvocation(
                 target,
                 writeConstructorContextMethod
+        );
+    }
+
+    public CtInvocation<?> createSendInvocation(Factory factory, CtExpression<?> target) {
+        CtTypeReference<?> registerUtilsType = factory.Type().createReference(PKG);
+        CtExecutableReference<?> sendMethod = factory.Executable().createReference(
+                registerUtilsType,
+                factory.Type().voidPrimitiveType(),
+                "send"
+        );
+        return factory.Code().createInvocation(
+                target,
+                sendMethod
         );
     }
 
