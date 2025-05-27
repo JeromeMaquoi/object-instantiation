@@ -1,4 +1,7 @@
 #!/bin/bash
+set -euo pipefail
+source "./logger.sh"
+trap 'log_error "Error in ${BASH_SOURCE[0]} on line ${LINENO}: ${BASH_COMMAND} (exit code: $?)" >&2; exit 1' ERR
 
 export $(grep -v '^#' .env | xargs -d '\n')
 
@@ -9,59 +12,41 @@ output_repo_path="${REPO_PATH}${PROJECT_NAME}_output"
 output_source_code="${output_repo_path}${SRC_FOLDER_PATH}/src/main/java/"
 
 # Remove old output folder
-echo "Removing ${output_repo_path}..."
-echo "rm -rf ${output_repo_path}"
+log_info "Removing ${output_repo_path}..."
+log_info "rm -rf ${output_repo_path}"
 rm -rf "$output_repo_path"
 
 # Copy the project into a new output folder where the transformed classes will be put
-echo "Copying ${input_repo_path} into ${output_repo_path}"
-echo "cp -r ${input_repo_path} ${output_repo_path}"
+log_info "Copying ${input_repo_path} into ${output_repo_path}"
+log_info "cp -r ${input_repo_path} ${output_repo_path}"
 cp -r "$input_repo_path" "$output_repo_path"
 
 # Create the .jar of object-instantiation project
-echo "mvn clean verify"
-if mvn clean verify; then
-  # Execute the .jar on the analyzed project
-  cd ./target || return
-  echo "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
-  java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path"
+log_info "mvn clean verify"
+mvn clean verify
 
-  # Execute CK on the project
-  cd ..
-  output_repo_path="$output_repo_path" plugin_path="$PWD/plugins" bash ./ck.sh
+# Execute the .jar on the analyzed project
+cd ./target || return
+log_info "java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar ${input_source_code} ${output_source_code}"
+java -jar object-instantiation-1.0-SNAPSHOT-jar-with-dependencies.jar "$input_source_code" "$output_source_code" "$input_repo_path" || true
 
-  # Run sentinel-backend
+# Execute CK on the project
+cd ..
+bash ./ck.sh "$output_repo_path" "$PWD/plugins"
+
+# Run sentinel-backend
 #  TODO make sure that the sentinel-backend is running? Or maybe get an error if it's not and then stop the script ?
 #  sudo bash "$SENTINEL_BACKEND"
 
-  # Put all CK data into the db
-  project_path="$CK_TO_DB_PROJECT_PATH" ck_input_path="$output_repo_path/output-ck/method.csv" ast_elem_api_url="$AST_ELEM_API_URL" bash ./ck-to-db.sh
+# Put all CK data into the db
+bash ./ck-to-db.sh "$CK_TO_DB_PROJECT_PATH" "$output_repo_path/output-ck/method.csv" "$AST_ELEM_API_URL"
 
-  # Copy be.unamur.snail.register package to the output folder
-  echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
-  mkdir -p "${output_source_code}/be/unamur/snail/register"
-  echo "cp -r ${REGISTER_PATH} ${output_source_code}/be/unamur/snail/register"
-  cp -r "$REGISTER_PATH" "${output_source_code}/be/unamur/snail/register/"
+# Copy be.unamur.snail.register package to the output folder
+log_info "mkdir -p ${output_source_code}/be/unamur/snail/register"
+mkdir -p "${output_source_code}/be/unamur/snail/register"
+log_info "cp -r ${REGISTER_PATH} ${output_source_code}/be/unamur/snail/register"
+cp -r "$REGISTER_PATH" "${output_source_code}/be/unamur/snail/register/"
 
-  # Execute tests of the analyzed project within the transformed code
-  cd "$output_repo_path" || return
+# Execute tests of the analyzed project within the transformed code
+bash ./run-tests.sh "$PROJECT_NAME" "$output_repo_path"
 
-  if [ "$PROJECT_NAME" == "spring-boot" ]; then
-    export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
-    rm -rf .gradle/
-    echo "./gradlew clean spring-boot-project:spring-boot:test"
-  #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
-  #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.logging.log4j2.ColorConverterTests
-    ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties
-  fi
-
-  if [ "$PROJECT_NAME" == "spoon" ]; then
-    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-    mvn clean test
-  fi
-
-  # TODO handle other projects execution
-
-else
-  echo "mvn clean verify has failed"
-fi
