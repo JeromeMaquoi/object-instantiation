@@ -30,6 +30,13 @@ if mvn clean verify; then
   cd ..
   output_repo_path="$output_repo_path" plugin_path="$PWD/plugins" bash ./ck.sh
 
+  # Run sentinel-backend
+#  TODO make sure that the sentinel-backend is running? Or maybe get an error if it's not and then stop the script ?
+#  sudo bash "$SENTINEL_BACKEND"
+
+  # Put all CK data into the db
+  project_path="$CK_TO_DB_PROJECT_PATH" ck_input_path="$output_repo_path/output-ck/method.csv" ast_elem_api_url="$AST_ELEM_API_URL" bash ./ck-to-db.sh
+
   # Copy be.unamur.snail.register package to the output folder
   echo "mkdir -p ${output_source_code}/be/unamur/snail/register"
   mkdir -p "${output_source_code}/be/unamur/snail/register"

@@ -16,6 +16,7 @@ if [ ! -d "output-ck" ] || [ "$(ls -1A "$output_repo_path/output-ck/" | wc -l)" 
     java -jar "$plugin_path/$ck_jar" "$output_repo_path" False 0 True "$output_repo_path/output-ck/"
 else
     echo "Directory 'output-ck' already exists or is not empty in $output_repo_path"
+    exit 1
 fi
 echo -e "\n"
 
