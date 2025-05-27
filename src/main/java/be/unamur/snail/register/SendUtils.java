@@ -68,7 +68,7 @@ public class SendUtils {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-        log.info("json : {}", json);
+//        log.info("json : {}", json);
         // TODO post to the API
     }
 

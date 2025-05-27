@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 source "./logger.sh"
-trap 'log_error "Error in ${BASH_SOURCE[0]} on line ${LINENO}: ${BASH_COMMAND} (exit code: $?)" >&2; exit 1' ERR
+trap 'log_error "Error in ${BASH_SOURCE[0]} on line ${LINENO} (exit code: $?)" >&2; exit 1' ERR
 
 output_repo_path=$1
 plugin_path=$2

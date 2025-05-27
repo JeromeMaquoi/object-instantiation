@@ -1,17 +1,17 @@
 #!/bin/bash
 set -euo pipefail
 source "./logger.sh"
-trap 'log_error "Error in ${BASH_SOURCE[0]} on line ${LINENO}: ${BASH_COMMAND} (exit code: $?)" >&2; exit 1' ERR
+trap 'log_error "Error in ${BASH_SOURCE[0]} on line ${LINENO} (exit code: $?)" >&2; exit 1' ERR
 
 PROJECT_NAME=$1
 PROJECT_DIR=$2
 
 cd "$PROJECT_DIR" || return
 
+log_info "Starting to run the tests of ${PROJECT_NAME}"
 if [ "$PROJECT_NAME" == "spring-boot" ]; then
   export JAVA_HOME=/usr/lib/jvm/java-19-openjdk-amd64
   rm -rf .gradle/
-  log_info "./gradlew clean spring-boot-project:spring-boot:test"
 #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks
 #  ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.logging.log4j2.ColorConverterTests
   ./gradlew clean spring-boot-project:spring-boot:test --rerun-tasks --tests org.springframework.boot.ApplicationEnvironmentTests.propertyResolverIsOptimizedForConfigurationProperties

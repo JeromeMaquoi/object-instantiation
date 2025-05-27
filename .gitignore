@@ -12,6 +12,7 @@ target/
 *.orig
 classes/
 out/
+logs/
 
 ### Eclipse ###
 .apt_generated
