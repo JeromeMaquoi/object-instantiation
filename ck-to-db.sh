@@ -14,7 +14,7 @@ cd "$project_path" || exit
 
 log_info "Compile the \"ck-to-db\" project"
 # Compile project that reads CK data
-./mvnw clean verify
+run_quiet "ck-to-db" ./mvnw clean verify
 
 # Execute project
 cd ./target || return

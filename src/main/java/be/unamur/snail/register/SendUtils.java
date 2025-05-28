@@ -65,11 +65,19 @@ public class SendUtils {
         String json;
         try {
             json = mapper.writeValueAsString(constructorContext);
+            System.out.println(json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
-//        log.info("json : {}", json);
-        // TODO post to the API
+        HttpClientService service = new HttpClientService();
+        try {
+            String result = service.post(envVariables.getEnvVariable("CONSTRUCTOR_CONTEXT_API_URL"), json);
+            System.out.println(result);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 

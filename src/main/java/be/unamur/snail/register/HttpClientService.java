@@ -8,11 +8,13 @@ import java.net.http.HttpResponse;
 import java.util.InvalidPropertiesFormatException;
 
 public class HttpClientService {
-    private static final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient;
 
-    private HttpClientService() {}
+    public HttpClientService() {
+        this.httpClient = HttpClient.newHttpClient();
+    }
 
-    public static String post(String url, String jsonPayload) throws IOException, InterruptedException {
+    public String post(String url, String jsonPayload) throws IOException, InterruptedException {
         if (jsonPayload != null) {
             // Build the HTTP request
             HttpRequest request = HttpRequest.newBuilder()
@@ -25,9 +27,7 @@ public class HttpClientService {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 return response.body();
-            } /*else if (response.statusCode() == 400) {
-                System.out.println("Bad Request, entity already exists : " + response.body());
-            }*/ else {
+            } else {
                 System.out.println("Error: " + response.statusCode() + " " + response.body());
                 throw new RuntimeException("HTTP error: " + response.statusCode() + ", body: " + response.body());
             }
